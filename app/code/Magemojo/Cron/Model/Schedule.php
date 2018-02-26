@@ -3,7 +3,7 @@
  * Copyright Â© Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-namespace Magemojo\Cron\Model;
+namespace MageMojo\Cron\Model;
 
 /**
  * Schedule resource

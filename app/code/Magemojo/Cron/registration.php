@@ -1,7 +1,7 @@
 <?php
- 
+
 \Magento\Framework\Component\ComponentRegistrar::register(
 \Magento\Framework\Component\ComponentRegistrar::MODULE,
-'Magemojo_Cron',
+'MageMojo_Cron',
 __DIR__
 );
