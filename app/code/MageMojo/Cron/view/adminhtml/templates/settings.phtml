@@ -1,0 +1,36 @@
+<form name="magemojocron" method="POST" id="magemojocron" action="<?php echo $block->getUrl('*/*/index'); ?>">
+<?php echo $block->getBlockHtml('formkey')?>
+    <div data-mage-init='{"floatingHeader": {}}' class="page-actions"  data-ui-id="page-actions-toolbar-content-header" >
+        <button id="save" title="Save Config" type="button" class="action-default scalable save primary" data-mage-init="{&quot;button&quot;:{&quot;event&quot;:&quot;save&quot;,&quot;target&quot;:&quot;#config-edit-form&quot;}}"  data-ui-id="page-actions-toolbar-save-button" onClick="document.getElementById('magemojocron').submit();">
+    <span>Save Config</span>
+</button>
+    </div>
+<div id="page:main-container" class="page-columns">
+<div class="entry-edit form-inline">
+    <div class="section-config">
+      <table cellspacing="0" class="form-list"><colgroup class="label" /><colgroup class="value" /><colgroup class="scope-label" /><colgroup class="" /><tbody>
+        <tr id="row_general_country_default">
+          <td class="label"><span data-config-scope="[STORE VIEW]">Cron Enabled</span></label></td>
+          <td class="value"><?php $block->checkbox('magemojo/cron/enabled','enabled'); ?></td>
+        </tr>
+        <tr id="row_general_country_default">
+          <td class="label"><span data-config-scope="[STORE VIEW]">Maximun Cron Processes</span></label></td>
+          <td class="value"><?php $block->textfield('magemojo/cron/jobs','maxjobs'); ?></td>
+        </tr>
+        <tr id="row_general_country_default">
+          <td class="label"><span data-config-scope="[STORE VIEW]">PHP Process</span></label></td>
+          <td class="value"><?php $block->textfield('magemojo/cron/phpproc','phpproc'); ?></td>
+        </tr>
+        <tr id="row_general_country_default">
+          <td class="label"><span data-config-scope="[STORE VIEW]">Max Load Average</span></label></td>
+          <td class="value"><?php $block->textfield('magemojo/cron/maxload','maxload'); ?></td>
+        </tr>
+        <tr id="row_general_country_default">
+          <td class="label"><span data-config-scope="[STORE VIEW]">History Retention</span></label></td>
+          <td class="value"><?php $block->textfield('magemojo/cron/history','history'); ?></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</form>

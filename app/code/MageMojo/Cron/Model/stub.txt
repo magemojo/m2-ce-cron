@@ -1,0 +1,1 @@
+require "<<basedir>>/app/bootstrap.php"; $bootstrap = \Magento\Framework\App\Bootstrap::create(BP, $_SERVER); $obj = $bootstrap->getObjectManager(); $state = $obj->get("Magento\Framework\App\State"); $state->setAreaCode("frontend"); $instance = $obj->get("<<instance>>"); $instance-><<method>>();
