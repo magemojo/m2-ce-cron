@@ -5,15 +5,16 @@ use Magento\Framework\View\Element\Template;
 class Settings extends \Magento\Framework\View\Element\Template
 {
     private $_cronconfig;
+    protected $resourceconfig;
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\App\ResourceConnection $resource,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \MageMojo\Cron\Model\ResourceModel\Schedule $resourceconfig,
         array $data = []
     ) {
         $this->_resource = $resource;
-        $this->scopeConfig = $scopeConfig;
+        $this->resourceconfig = $resourceconfig;
 
         parent::__construct(
             $context,
@@ -23,11 +24,11 @@ class Settings extends \Magento\Framework\View\Element\Template
 
     public function getConfig($path)
     {
-        return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->resourceconfig->getConfigValue($path, 'default', 0);
     }
 
     public function checkbox($path, $name) {
-      $value = $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE); 
+      $value = $this->resourceconfig->getConfigValue($path, 'default', 0); 
       print '<input type="checkbox" name="'.$name.'" value="1" ';
       if ($value) {
         print 'checked';
@@ -36,7 +37,7 @@ class Settings extends \Magento\Framework\View\Element\Template
     }
 
     public function textfield($path, $name) {
-      $value = $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+      $value = $this->resourceconfig->getConfigValue($path, 'default', 0);
       print '<input type="text" name="'.$name.'" value="'.$value.'">';
     }
 

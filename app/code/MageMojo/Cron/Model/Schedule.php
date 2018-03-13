@@ -9,14 +9,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $directorylist;
     private $cronschedule;
     private $resource;
-    private $scopeconfig;
  
     public function __construct(\Magento\Cron\Model\Config $cronconfig,
       \Magento\Framework\App\Filesystem\DirectoryList $directorylist,
-      \Magento\Config\Model\ResourceModel\Config $scopeconfig,
       \MageMojo\Cron\Model\ResourceModel\Schedule $resource) {
       $this->cronconfig = $cronconfig;
-      $this->scopeconfig = $scopeconfig;
       $this->directorylist = $directorylist;
       $this->resource = $resource;
     }
@@ -53,7 +50,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
    
     public function setPid($file,$scheduleid) {
-      print 'file='.$file;
+      #print 'file='.$file;
       file_put_contents($this->basedir.'/var/cron/'.$file,$scheduleid);
     }
 
@@ -106,11 +103,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
     
     public function getRuntimeParameters() {
-      $this->simultaniousJobs = $this->scopeconfig->getValue('magemojo\cron\jobs', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-      $this->phpproc = $this->scopeconfig->getValue('magemojo\cron\phpproc', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-      $this->maxload = $this->scopeconfig->getValue('magemojo\cron\maxload', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-      $this->history = $this->scopeconfig->getValue('magemojo\cron\history', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-      $this->cronenabled = $this->scopeconfig->getValue('magemojo\cron\enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+      $this->simultaniousJobs = $this->resource->getConfigValue('magemojo/cron/jobs',0,'default');
+      $this->phpproc = $this->resource->getConfigValue('magemojo/cron/phpproc',0,'default');
+      $this->maxload = $this->resource->getConfigValue('magemojo/cron/maxload',0,'default');
+      $this->history = $this->resource->getConfigValue('magemojo/cron/history',0,'default');
+      $this->cronenabled = $this->resource->getConfigValue('magemojo/cron/enabled',0,'default');
     }
     
     public function checkCronExpression($expr,$value) {

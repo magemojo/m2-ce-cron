@@ -8,6 +8,24 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         $this->_init('cron_schedule', 'schedule_id');
     }
 
+    #making our own function for this because it doesnt't work anyplace consistantly
+    public function getConfigValue($path,$scope,$scopeid) {
+      $connection = $this->getConnection();
+      $select = $connection->select()
+        ->from($this->getTable('core_config_data'),['value'])
+        ->where('path = ?',  $path)
+        ->where('scope_id = ?', $scopeid)
+        ->where('scope = ?', $scope);
+      $result = $connection->fetchOne($select);
+      return $result;
+    }
+
+    public function setConfigValue($path,$scope,$scopeid,$value) {
+      $connection = $this->getConnection();
+      $updatedata = array('value' => $value);
+      $connection->update($this->getTable('core_config_data'),$updatedata,['path = ?' => $path,'scope_id = ?' => $scopeid,'scope = ?' => $scope]);
+    }
+
     public function getLastJobTime() {
       $connection = $this->getConnection();
       $select = $connection->select()

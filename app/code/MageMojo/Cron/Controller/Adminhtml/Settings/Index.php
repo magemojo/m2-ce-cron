@@ -1,20 +1,20 @@
 <?php
- 
+
 namespace MageMojo\Cron\Controller\Adminhtml\Settings;
-use Magento\Backend\App\Action; 
+use Magento\Backend\App\Action;
 
 class Index extends \Magento\Backend\App\Action
 {
 /** @var \Magento\Framework\View\Result\PageFactory  */
 protected $resultPageFactory;
-protected $scopeConfig;
+protected $resource;
 public function __construct(
      \Magento\Backend\App\Action\Context $context,
      \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-     \Magento\Config\Model\ResourceModel\Config $scopeConfig
+     \MageMojo\Cron\Model\ResourceModel\Schedule $resource
 ) {
      $this->resultPageFactory = $resultPageFactory;
-     $this->scopeConfig = $scopeConfig;
+     $this->resource = $resource;
      parent::__construct($context);
 }
 /**
@@ -26,18 +26,18 @@ public function execute()
 {
     if ($this->getRequest()->getParam('form_key')) {
       if ($this->getRequest()->getParam('enabled')) {
-        $this->scopeConfig->saveConfig('magemojo/cron/enabled',1,'default',0);
+        $this->resource->setConfigValue('magemojo/cron/enabled','default',0,1);
       } else {
-        $this->scopeConfig->saveConfig('magemojo/cron/enabled',0,'default',0);
-      } 
-      $this->scopeConfig->saveConfig('magemojo/cron/jobs',$this->getRequest()->getParam('maxjobs'),'default',0);
-      $this->scopeConfig->saveConfig('magemojo/cron/phpproc',$this->getRequest()->getParam('phpproc'),'default',0);
-      $this->scopeConfig->saveConfig('magemojo/cron/maxload',$this->getRequest()->getParam('maxload'),'default',0);
-      $this->scopeConfig->saveConfig('magemojo/cron/history',$this->getRequest()->getParam('history'),'default',0);
+        $this->resource->setConfigValue('magemojo/cron/enabled','default',0,0);
+      }
+      $this->resource->setConfigValue('magemojo/cron/jobs','default',0,$this->getRequest()->getParam('maxjobs'));
+      $this->resource->setConfigValue('magemojo/cron/phpproc','default',0,$this->getRequest()->getParam('phpproc'));
+      $this->resource->setConfigValue('magemojo/cron/maxload','default',0,$this->getRequest()->getParam('maxload'));
+      $this->resource->setConfigValue('magemojo/cron/history','default',0,$this->getRequest()->getParam('history'));
     }
-     
+
 
     return $this->resultPageFactory->create();
-    
+
 }
 }
