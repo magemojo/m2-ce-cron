@@ -6,9 +6,9 @@
 ## Features
 
 - Enable / Disable running crons
-- Ability to limit the number of simultanious crons jobs being run
-- Ability to suspend cron functions is load average on the serer becomes too high
-- Set the amount of history to retain in the cron_schedule table in days
+- Limit the number of simultanious crons jobs being run
+- Suspend cron functions by load average threshold
+- Set the amount of history to retain in the cron_schedule table
 
 ## Manual Install
 
