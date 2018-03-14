@@ -6,7 +6,7 @@
 ## Features
 
 - Enable / Disable running crons
-- Limit the number of simultanious crons jobs being run
+- Limit the number of simultaneous crons jobs being run
 - Suspend cron functions by load average threshold
 - Set the amount of history to retain in the cron_schedule table
 
