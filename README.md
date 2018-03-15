@@ -11,17 +11,35 @@ Think of the default cron as a factory that suddenly appears and runs any number
 
 Our module implement removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
+In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
+
+## Benefits
+
+* Speeds up execution of cron.
+
+* Stops db locking.
+
+* Prevents cron history records from exploding.
+
+* Stops cron processes from overruning each other.
+
+* Stops the cron from running while system is under configurable load conditions.
+
+* Sets the max number of simultaneous cron processes.
+
+* Sets the amount of history 
+
 ## Admin Options
 
 **Cron Enabled** - Turn the cron on/off.
 
-**Maximum Cron Processes** - The number of cron threads running in parallel.  This option is the sum of all defined jobs.  Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed.
+**Maximum Cron Processes** - The number of cron threads running in parallel.  This option is the sum of all defined jobs.  Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed. Default 3.
 
-**PHP Binary Name / Path** - The name of your php binary you run from the shell.  Usually php or php70.  You can optionally include the full path to the binary.
+**PHP Binary Name / Path** - The name of your php binary you run from the shell.  Usually php or php70.  You can optionally include the full path to the binary. Default php.
 
-**Max Load Average** - Defined by the php function sys.getloadavg(). Values less than 1 mean your server is not waiting for cpu cores.  Values over 1 mean your system does not have free cpu. Example: Max Load Average is set to 1.  Your system load average goes to 2.  Crons will not run.  Your load average falls to 0.9.  Your crons will run.  Any cron that was scheduled to run but didn't will be run.  If the same cron was missed multiple times, the most recent job will run, and the rest will be marked as missed.
+**Max Load Average** - Defined by the php function sys.getloadavg() / number of cpu cores. The function sys.getloadavg() is reported 1.0 for each core in use, just like the load average reported in top.  The number of cpu cores is pulled from /proc/cpuinfo and load average is divided by this number. Example: If you have 8 cores and you're using 6 then this is returned as 0.75. If your Max Load Average is 0.76 your crons will not run. Your load average falls to 0.74.  Your crons will run.  Any cron that was scheduled to run but didn't will be run.  If the same cron was missed multiple times, the most recent job will run, and the rest will be marked as missed. Default is 0.75 (75% of your available cpu).
 
-**History Retention** - The number of days history to keep in the cron_schedule table.
+**History Retention** - The number of days history to keep in the cron_schedule table. Default 1 (1 day).
 
 ## Manual Install
 
