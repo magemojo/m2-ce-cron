@@ -11,12 +11,17 @@ Think of the default cron as a factory that suddenly appears and runs any number
 
 Our module implement removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
-## Features
+## Admin Options
 
-- Enable / Disable running crons
-- Limit the number of simultaneous crons jobs being run
-- Suspend cron functions by load average threshold
-- Set the amount of history to retain in the cron_schedule table
+*Cron Enabled* - Turn the cron on/off.
+
+Maximum Cron Processes - The number of cron threads running in parallel.  This option is the sum of all defined jobs.  For example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed.
+
+*PHP Binary Name / Path* - The name of your php binary you run from the shell.  Usually php or php70.  You can also include the full path to the binary.
+
+*Max Load Average* - Defined by the php function sys.getloadavg(). Values less than 1 mean your server is not waiting for cpu cores.  Values over 1 mean your system does not have free cpu. Ex.  Max Load Average is set to 1.  Your system load average goes to 2.  Crons will not run.  Your load average falls to 0.9.  Your crons will run.  Any cron that was scheduled to run but didn't will be run.  If the same cron was missed multiple times, the most recent job will run, and the rest will be marked as missed.
+
+*History Retention* - The number of days history to keep in the cron_schedule table.
 
 ## Manual Install
 
