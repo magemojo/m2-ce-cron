@@ -7,7 +7,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $this->_init('cron_schedule', 'schedule_id');
     }
-
+    
     #making our own function for this because it doesnt't work anyplace consistantly
     public function getConfigValue($path,$scope,$scopeid) {
       $connection = $this->getConnection();
@@ -33,7 +33,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       $result = $connection->fetchOne($select);
       return $result;
     }
-
+    
     public function saveSchedule($job, $created, $schedule) {
       $connection = $this->getConnection();
       $insertdata = array();
@@ -90,7 +90,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       $result = $connection->fetchAll($select);
       return $result;
     }
-
+    
     public function resetSchedule() {
       $connection = $this->getConnection();
       $message = 'Parent Cron Process Terminated Abnomally';
@@ -109,7 +109,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       }
       return $ids;
     }
-
+    
     public function getSettings() {
       $connection = $this->getConnection();
 

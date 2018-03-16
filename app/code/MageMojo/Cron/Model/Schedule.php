@@ -9,13 +9,16 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $directorylist;
     private $cronschedule;
     private $resource;
+    private $maintenance;
  
     public function __construct(\Magento\Cron\Model\Config $cronconfig,
       \Magento\Framework\App\Filesystem\DirectoryList $directorylist,
-      \MageMojo\Cron\Model\ResourceModel\Schedule $resource) {
+      \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
+      \Magento\Framework\App\MaintenanceMode $maintenance) {
       $this->cronconfig = $cronconfig;
       $this->directorylist = $directorylist;
       $this->resource = $resource;
+      $this->maintenance = $maintenance;
     }
 
 
@@ -81,7 +84,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
     
     public function getJobOutput($scheduleid) {
-      $file = $this->basedir.'/var/cron/schedule'.$scheduleid;
+      $file = $this->basedir.'/var/cron/schedule.'.$scheduleid;
       if (file_exists($file)){
         return trim(file_get_contents($file));
       }
@@ -183,9 +186,21 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     public function canRunJobs($jobcount, $pending) {
+      $cpunum = exec('cat /proc/cpuinfo | grep processor | wc -l');
+      if (!$cpunum) {
+        $cpunum = 1;
+      }
+      if ((sys_getloadavg()[0] / $cpunum) > $this->maxload) {
+        print "Crons suspended due to high load average: ".(sys_getloadavg()[0] / $cpunum)."\n";
+      }
+      $maint = $this->maintenance->isOn();
+      if ($maint) {
+         print "Crons suspended due to maintenance mode being enabled \n";
+      }
       if (($jobcount < $this->simultaniousJobs) 
         and (count($pending) > 0)
-        and (sys_getloadavg()[0] < $this->maxload)) {
+        and ((sys_getloadavg()[0] / $cpunum) < $this->maxload)
+        and (!$maint)) {
         return true;
       }
       return false;
@@ -212,7 +227,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         foreach ($running as $pid=>$scheduleid) {
           if (!$this->checkProcess($pid)) {
             $output = $this->getJobOutput($scheduleid);
-            if (strpos(strtolower($output),'error') === true) {
+            if (strpos(strtolower($output),'error') > 0) {
               $this->resource->setJobStatus($scheduleid,'error',$output);
             } else {
               $this->resource->setJobStatus($scheduleid,'success',$output);
@@ -226,13 +241,13 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         print "Getting pending jobs\n";
         $pending = $this->resource->getPendingJobs();
         while ($this->canRunJobs($jobcount, $pending)) {
-          print "In job run loop\n";
+          #print "In job run loop\n";
           $job = array_pop($pending);
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
             $runtime = $this->prepareStub($jobconfig,$stub);
-            $cmd = $this->phpproc." -r '".$runtime."' & > ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." 2>&1 & echo $!;";
+            $cmd = $this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
             $pid = exec($cmd);
             $this->setPid('cron.'.$pid,$job["schedule_id"]);
             $this->resource->setJobStatus($job["schedule_id"],'running',NULL);

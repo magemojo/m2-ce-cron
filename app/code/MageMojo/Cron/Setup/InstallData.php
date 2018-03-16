@@ -38,10 +38,10 @@ class InstallData implements InstallDataInterface
         if (count($result) == 0) {
           $insertData = array();
           array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/enabled', 'value' => '1'));
-          array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/jobs', 'value' => '5'));
+          array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/jobs', 'value' => '3'));
           array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/phpproc', 'value' => 'php'));
           array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/history', 'value' => '1'));
-          array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/maxload', 'value' => '20'));
+          array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/maxload', 'value' => '.75'));
 
           $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
         }

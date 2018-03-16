@@ -10,24 +10,39 @@
     <div class="section-config">
       <table cellspacing="0" class="form-list"><colgroup class="label" /><colgroup class="value" /><colgroup class="scope-label" /><colgroup class="" /><tbody>
         <tr id="row_general_country_default">
-          <td class="label"><span data-config-scope="[STORE VIEW]">Cron Enabled</span></label></td>
-          <td class="value"><?php $block->checkbox('magemojo/cron/enabled','enabled'); ?></td>
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Cron Enabled:</b></span></label></td>
+          <td class="value" align="left"><?php $block->checkbox('magemojo/cron/enabled','enabled'); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">Turn the cron on/off.</td>
         </tr>
         <tr id="row_general_country_default">
-          <td class="label"><span data-config-scope="[STORE VIEW]">Maximun Cron Processes</span></label></td>
-          <td class="value"><?php $block->textfield('magemojo/cron/jobs','maxjobs'); ?></td>
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Maximum Cron Processes:</b></span></label></td>
+          <td class="value" align="left"><?php $block->textfield('magemojo/cron/jobs','maxjobs',2,2); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">The number of cron threads running in parallel. This option is the sum of all defined jobs. Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed. Default 3.</td>
         </tr>
         <tr id="row_general_country_default">
-          <td class="label"><span data-config-scope="[STORE VIEW]">PHP Process</span></label></td>
-          <td class="value"><?php $block->textfield('magemojo/cron/phpproc','phpproc'); ?></td>
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>PHP Binary Naqme / Path:</b></span></label></td>
+          <td class="value" align="left"><?php $block->textfield('magemojo/cron/phpproc','phpproc',10,100); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">The name of your php binary you run from the shell. Usually php or php70. You can optionally include the full path to the binary. Default php.</td>
         </tr>
         <tr id="row_general_country_default">
-          <td class="label"><span data-config-scope="[STORE VIEW]">Max Load Average</span></label></td>
-          <td class="value"><?php $block->textfield('magemojo/cron/maxload','maxload'); ?></td>
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Max Load Average:</b></span></label></td>
+          <td class="value" align="left"><?php $block->textfield('magemojo/cron/maxload','maxload',2,2); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">Defined by the php function sys.getloadavg() / number of cpu cores. The function sys.getloadavg() is reported 1.0 for each core in use, just like the load average reported in top. The number of cpu cores is pulled from /proc/cpuinfo and load average is divided by this number. If load average exceeds this amount cron processes will be temporarily suspended until load decreases.</td>
         </tr>
         <tr id="row_general_country_default">
-          <td class="label"><span data-config-scope="[STORE VIEW]">History Retention</span></label></td>
-          <td class="value"><?php $block->textfield('magemojo/cron/history','history'); ?></td>
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>History Retention:</b></span></label></td>
+          <td class="value" align="left"><?php $block->textfield('magemojo/cron/history','history',4,4); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">The number of days history to keep in the cron_schedule table. Default 1 (1 day).</td>
         </tr>
       </table>
     </div>
