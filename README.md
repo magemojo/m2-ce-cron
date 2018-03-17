@@ -48,7 +48,7 @@ In addition to the service model many other enhancements have been made.  For ex
 - Run these commands in your terminal:
 
 ```bash
-bin/magento module:enable MageMojo_SplitDb
+bin/magento module:enable MageMojo_Cron
 bin/magento setup:upgrade
 ```
 - enable cron jobs as defined here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
