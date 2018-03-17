@@ -9,7 +9,7 @@ This module changes the cron management into a service that accepts jobs. As job
 
 Think of the default cron as a factory that suddenly appears and runs any number of tasks. If those tasks do not complete by the next cron interval, they keep processing but another factory spontaneously appears and run another set of jobs which can overlap with the original factory.  
 
-Our module implement removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
+The module removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
 
