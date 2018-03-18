@@ -27,7 +27,7 @@ In addition to the service model many other enhancements have been made.  For ex
 
 * Sets the max number of simultaneous cron processes.
 
-* Sets the amount of history 
+* Sets the amount of history. 
 
 ## Admin Options
 
