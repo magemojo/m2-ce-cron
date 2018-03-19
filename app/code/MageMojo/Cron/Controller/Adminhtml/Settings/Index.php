@@ -1,23 +1,20 @@
 <?php
- 
+
 namespace MageMojo\Cron\Controller\Adminhtml\Settings;
-use Magento\Backend\App\Action; 
+use Magento\Backend\App\Action;
 
 class Index extends \Magento\Backend\App\Action
 {
 /** @var \Magento\Framework\View\Result\PageFactory  */
 protected $resultPageFactory;
 protected $resource;
-protected $messageManager;
 public function __construct(
      \Magento\Backend\App\Action\Context $context,
      \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-     \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
-     \Magento\Framework\Message\ManagerInterface $messageManager
+     \MageMojo\Cron\Model\ResourceModel\Schedule $resource
 ) {
      $this->resultPageFactory = $resultPageFactory;
      $this->resource = $resource;
-     $this->messageManager = $messageManager;
      parent::__construct($context);
 }
 /**
@@ -62,9 +59,9 @@ public function execute()
         $this->messageManager->addSuccess('Cron Configuration Saved');
       }
     }
-     
+
 
     return $this->resultPageFactory->create();
-    
+
 }
 }
