@@ -13,6 +13,9 @@ The module removes the possibility of overlapping jobs by having a single source
 
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
 
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Benefits
 
 * Speeds up execution of cron.
