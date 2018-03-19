@@ -1,7 +1,7 @@
 [![MageMojo](https://magetalk.com/wp-content/uploads/2017/11/q7xJZaM5TImMN7mUIb0c.png)](https://magemojo.com/)
 
 # Cron
-#### This patch for Magento 2 overrides base magento cron functionality and replaces it with a cron service model. 
+#### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
@@ -9,7 +9,7 @@ This module changes the cron management into a service that accepts jobs. As job
 
 Think of the default cron as a factory that suddenly appears and runs any number of tasks. If those tasks do not complete by the next cron interval, they keep processing but another factory spontaneously appears and run another set of jobs which can overlap with the original factory.  
 
-Our module implement removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
+The module removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
 
@@ -27,7 +27,7 @@ In addition to the service model many other enhancements have been made.  For ex
 
 * Sets the max number of simultaneous cron processes.
 
-* Sets the amount of history 
+* Sets the amount of history. 
 
 ## Admin Options
 
@@ -48,7 +48,7 @@ In addition to the service model many other enhancements have been made.  For ex
 - Run these commands in your terminal:
 
 ```bash
-bin/magento module:enable MageMojo_SplitDb
+bin/magento module:enable MageMojo_Cron
 bin/magento setup:upgrade
 ```
 - enable cron jobs as defined here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
