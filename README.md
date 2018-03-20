@@ -3,6 +3,8 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
+![Version 1.1.0](https://img.shields.io/badge/Version-1.1.0-green.svg)
+
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
 This module changes the cron management into a service that accepts jobs. As jobs are scheduled, they are sent to this service for execution.  If a job is already running and another is sent with the same job code, the new one is marked as missed.  Duplicate jobs are prevented from running, reducing server overhead.
@@ -12,6 +14,9 @@ Think of the default cron as a factory that suddenly appears and runs any number
 The module removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Benefits
 
@@ -52,8 +57,6 @@ bin/magento module:enable MageMojo_Cron
 bin/magento setup:upgrade
 ```
 - enable cron jobs as defined here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
-
-![Version 1.0.0](https://img.shields.io/badge/Version-1.0.0-green.svg)
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
