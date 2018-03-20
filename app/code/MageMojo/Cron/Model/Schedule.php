@@ -3,14 +3,14 @@ namespace MageMojo\Cron\Model;
 
 use Magento\Framework\App\ObjectManager;
 
-class Schedule extends \Magento\Framework\Model\AbstractModel 
+class Schedule extends \Magento\Framework\Model\AbstractModel
 {
     private $cronconfig;
     private $directorylist;
     private $cronschedule;
     private $resource;
     private $maintenance;
- 
+
     public function __construct(\Magento\Cron\Model\Config $cronconfig,
       \Magento\Framework\App\Filesystem\DirectoryList $directorylist,
       \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
@@ -31,7 +31,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       $this->config = $jobs;
     }
-    
+
     public function initialize() {
       $this->getConfig();
       $this->getRuntimeParameters();
@@ -51,7 +51,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       return false;
     }
-   
+
     public function setPid($file,$scheduleid) {
       #print 'file='.$file;
       file_put_contents($this->basedir.'/var/cron/'.$file,$scheduleid);
@@ -60,11 +60,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     public function unsetPid($pid) {
       unlink($this->basedir.'/var/cron/'.$pid);
     }
-    
+
     public function getRunningPids() {
       $pids = array();
       $filelist = scandir($this->basedir.'/var/cron/');
-      
+
       foreach ($filelist as $file) {
         if ($file != 'cron.pid') {
           $pid = str_replace('cron.','',$file);
@@ -75,20 +75,20 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       return $pids;
     }
-     
+
     public function checkProcess($pid) {
       if (file_exists( "/proc/$pid" )){
         return true;
       }
       return false;
     }
-    
+
     public function getJobOutput($scheduleid) {
       $file = $this->basedir.'/var/cron/schedule.'.$scheduleid;
       if (file_exists($file)){
         return trim(file_get_contents($file));
       }
-      return NULL; 
+      return NULL;
     }
 
     public function cleanupProcesses() {
@@ -104,7 +104,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       $this->runningPids = $running;
     }
-    
+
     public function getRuntimeParameters() {
       $this->simultaniousJobs = $this->resource->getConfigValue('magemojo/cron/jobs',0,'default');
       $this->phpproc = $this->resource->getConfigValue('magemojo/cron/phpproc',0,'default');
@@ -112,7 +112,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->history = $this->resource->getConfigValue('magemojo/cron/history',0,'default');
       $this->cronenabled = $this->resource->getConfigValue('magemojo/cron/enabled',0,'default');
     }
-    
+
     public function checkCronExpression($expr,$value) {
       foreach (explode(',',$expr) as $e) {
         if (($e == '*') or ($e == $value)) {
@@ -133,7 +133,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       return false;
     }
-   
+
     public function createSchedule($from, $to) {
       $this->getConfig();
       foreach($this->config as $job) {
@@ -158,9 +158,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
       }
     }
- 
+
     public function execute() {
-      $this->basedir = $this->directorylist->getRoot(); 
+      $this->basedir = $this->directorylist->getRoot();
       print "Healthchecking Cron Service\n";
       $pid = $this->checkPid('cron.pid');
       if (!$this->checkProcess($pid) or (!$pid)) {
@@ -174,7 +174,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     public function getJobConfig($jobname) {
-      return $this->config[$jobname]; 
+      return $this->config[$jobname];
     }
 
     public function prepareStub($jobconfig, $stub) {
@@ -197,7 +197,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       if ($maint) {
          print "Crons suspended due to maintenance mode being enabled \n";
       }
-      if (($jobcount < $this->simultaniousJobs) 
+      if (($jobcount < $this->simultaniousJobs)
         and (count($pending) > 0)
         and ((sys_getloadavg()[0] / $cpunum) < $this->maxload)
         and (!$maint)) {
@@ -208,6 +208,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
     public function service() {
       $stub = file_get_contents(__DIR__.'/stub.txt');
+      date_default_timezone_set('UTC');
       print "Starting Service\n";
       while (true) {
         $this->getRuntimeParameters();
@@ -263,7 +264,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         sleep(5);
       }
     }
-    
+
     public function asylum() {
       $crons = $this->getRunningPids();
       $jobs = $this->resource->getJobsByStatus('running');
@@ -289,7 +290,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->unsetPid('cron.'.$pid);
       }
     }
-    
+
     public function getScheduleOutputIds() {
       $filelist = scandir($this->basedir.'/var/cron/');
       $scheduleids = array();
