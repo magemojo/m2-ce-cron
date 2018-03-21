@@ -7,13 +7,15 @@
 
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
-This module changes the cron management into a service that accepts jobs. As jobs are scheduled, they are sent to this service for execution.  If a job is already running and another is sent with the same job code, the new one is marked as missed.  Duplicate jobs are prevented from running, reducing server overhead.
+This module replaces the cron management with a service that accepts jobs. As jobs are scheduled, they are picked up by this service for execution.  If a job is already running and another is picked up with the same job code, the new one is marked as missed.  Duplicate jobs are prevented from running, reducing server overhead.
 
 Think of the default cron as a factory that suddenly appears and runs any number of tasks. If those tasks do not complete by the next cron interval, they keep processing but another factory spontaneously appears and run another set of jobs which can overlap with the original factory.  
 
 The module removes the possibility of overlapping jobs by having a single source service that processes jobs in proper order without duplication. There is one factory working all the time to get your jobs done. 
 
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
+
+In version 1.1 Cron Reporting was added to the admin to show job code statistics and list cron run errors.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -48,7 +50,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Manual Install
 
-- [Download this ZIP](https://github.com/magemojo/m2-ce-cron/archive/master.zip) and paste in your root folder.
+- [Download this ZIP](https://github.com/magemojo/m2-ce-cron/archive/master.zip) and extract the app folder into your webroot.
 
 - Run these commands in your terminal:
 
@@ -56,7 +58,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 bin/magento module:enable MageMojo_Cron
 bin/magento setup:upgrade
 ```
-- enable cron jobs as defined here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
+- Log into your admin and set your options under System -> Cron Settings
+
+- Enable cron jobs as defined if it is not already enabled here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
