@@ -118,4 +118,39 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
       return $result;
     }
+
+    public function getReport() {
+      $connection = $this->getConnection();
+      
+      $columns = array(
+        'job_code',
+        'status',
+        'count(*) as count',
+        "max(executed_at) as executed_at"
+      );
+      $select = $connection->select()
+        ->from($this->getTable('cron_schedule'),$columns)
+        ->group('job_code')
+        ->group('status')
+        ->order('job_code')
+        ->order('status');
+      $result = $connection->fetchAll($select);
+      return $result;
+    }
+
+    public function getErrorReport() {
+      $connection = $this->getConnection();
+      
+      $columns = array(
+        'job_code',
+        'messages'
+      );
+      $select = $connection->select()
+        ->from($this->getTable('cron_schedule'),$columns)
+        ->where('status = ?', 'error')
+        ->group('job_code')
+        ->order('job_code');
+      $result = $connection->fetchAll($select);
+      return $result;
+    }
 }

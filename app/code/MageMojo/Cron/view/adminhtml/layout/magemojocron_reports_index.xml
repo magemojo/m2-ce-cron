@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<head>
+     <title>
+         Cron Report
+     </title>
+</head>
+        <body>
+            <referenceContainer name="content">
+                <block class="MageMojo\Cron\Block\Adminhtml\Reports" name="magemojocron" template="MageMojo_Cron::reports.phtml"/>
+            </referenceContainer>
+        </body>
+
+</page>

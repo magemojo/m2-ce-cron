@@ -1,0 +1,83 @@
+<h2>Cron Execution</h2>
+
+<?php
+  date_default_timezone_set('UTC');
+  #Times are stored in UTC, converting to the locale timezone for report
+  $utc = date("Y-m-d h:i:s A");
+  $timezone = $block->getLocalTimezone();
+  date_default_timezone_set($timezone);
+  $local = date("Y-m-d h:i:s A");
+  $timediff = (strtotime($utc) - strtotime($local));
+  print 'Execution times are in '.$timezone;
+  print '<br/>';
+  print '<br/>';
+?>
+<table width="100%" border="1">
+<tr>
+<td><b>Job Code</b></td>
+<td><b>Running</b></td>
+<td><b>Success</b></td>
+<td><b>Pending</b></td>
+<td><b>Missed</b></td>
+<td><b>Error</b></td>
+<td><b>Last Executed</b></td>
+</tr>
+<?php
+  $reports = $block->getReport();
+
+  $jobs = array();
+  $job_code = '';
+  foreach($reports as $report) {
+    if ($report["job_code"] != $job_code) {
+      $jobs[$report["job_code"]] = array('success' => 0, 'running' => 0, 'pending' => 0, 'missed' => 0, 'error' => 0, 'executed_at' => 'N/A');
+      $job_code = $report["job_code"];
+    }
+    if (($report["status"] == 'success' and $jobs[$report["job_code"]]["executed_at"] == 'N/A') or $report["status"] == 'running') {
+      $jobs[$report["job_code"]]["executed_at"] = $report["executed_at"];
+    }
+    $jobs[$report["job_code"]][$report["status"]] = $report["count"];
+  }
+  #print_r($jobs);
+  foreach ($jobs as $job_code=>$job) {
+    if ($job["executed_at"] == 'N/A') {
+      $executed = $job["executed_at"];
+    } else {
+      $executed = strtotime($job["executed_at"]);
+      $executed = date("Y-m-d h:i:s A",($executed - $timediff));
+    }
+    #print_r($job);
+    print '<tr>';
+    print '<td>'.$job_code.'</td>';
+    print '<td>'.$job["running"].'</td>';
+    print '<td>'.$job["success"].'</td>';
+    print '<td>'.$job["pending"].'</td>';
+    print '<td>'.$job["missed"].'</td>';
+    print '<td>'.$job["error"].'</td>';
+    print '<td>'.$executed.'</td>';
+    print '</tr>';
+  }
+
+?>
+</table>
+<br/>
+<br/>
+<h2>Errors</h2>
+<table width="100%" border="1">
+<tr>
+<td><b>Job Code</b></td>
+<td><b>Error</b></td>
+<?php
+$errors = $block->getErrorReport();
+foreach($errors as $error) {
+  print '<tr>';
+  print '<td>'.$error["job_code"].'</td>';
+  print '<td>'.$error["messages"].'</td>';
+  print '</tr>';
+}
+?>
+</tr>
+</table>
+
+<br/>
+<br/>
+* Parent Cron Process Terminated Abnomally means the parent cron service was killed or disabled while this job was running, it most likely successfully completed, but the final status could not be determined.

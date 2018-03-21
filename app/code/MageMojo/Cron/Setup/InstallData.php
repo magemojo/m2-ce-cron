@@ -32,6 +32,9 @@ class InstallData implements InstallDataInterface
 
         $connection = $setup->getConnection();
         
+        #Truncate the cron_schedule table as it's usually full of garbage with localized times
+        $connection->delete($setup->getTable('cron_schedule'));
+        
         $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/%');
         $result = $connection->fetchAll($select);
         
