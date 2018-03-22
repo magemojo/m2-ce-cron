@@ -1,8 +1,4 @@
 <?php
-/**
- * Copyright Â© Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
 
 namespace MageMojo\Cron\Setup;
 
@@ -28,16 +24,17 @@ class InstallData implements InstallDataInterface
     {
 
         $setup->startSetup();
-        
+
 
         $connection = $setup->getConnection();
-        
+
         #Truncate the cron_schedule table as it's usually full of garbage with localized times
         $connection->delete($setup->getTable('cron_schedule'));
-        
+
         $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/%');
         $result = $connection->fetchAll($select);
-        
+
+        #Create core_config_data settings
         if (count($result) == 0) {
           $insertData = array();
           array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/enabled', 'value' => '1'));
@@ -49,9 +46,10 @@ class InstallData implements InstallDataInterface
           $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
         }
 
+        #create var/cron directory if not exists
         $basedir = $this->directorylist->getRoot();
-        
-        if (!file_exists($basedir.'/var/cron')) { 
+
+        if (!file_exists($basedir.'/var/cron')) {
           mkdir($basedir.'/var/cron');
         }
 

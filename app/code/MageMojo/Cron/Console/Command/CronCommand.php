@@ -1,9 +1,4 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
-
 namespace MageMojo\Cron\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
@@ -78,28 +73,5 @@ class CronCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
     	$this->schedule->execute();
-
-
-        /*$omParams = $_SERVER;
-        $omParams[StoreManager::PARAM_RUN_CODE] = 'admin';
-        $omParams[Store::CUSTOM_ENTRY_POINT_PARAM] = true;
-
-
-        $params[self::INPUT_KEY_GROUP] = $input->getOption(self::INPUT_KEY_GROUP);
-        $params[ProcessCronQueueObserver::STANDALONE_PROCESS_STARTED] = '0';
-        $bootstrap = $input->getOption(Cli::INPUT_KEY_BOOTSTRAP);
-        if ($bootstrap) {
-            $bootstrapProcessor = new ComplexParameter(Cli::INPUT_KEY_BOOTSTRAP);
-            $bootstrapOptionValues = $bootstrapProcessor->getFromString(
-                '--' . Cli::INPUT_KEY_BOOTSTRAP . '=' . $bootstrap
-            );
-            $bootstrapOptionValue = $bootstrapOptionValues[ProcessCronQueueObserver::STANDALONE_PROCESS_STARTED];
-            if ($bootstrapOptionValue) {
-                $params[ProcessCronQueueObserver::STANDALONE_PROCESS_STARTED] = $bootstrapOptionValue;
-            }
-        }
-
-        $cronObserver->launch();*/
-        #$output->writeln('<info>' . 'Ran jobs by schedule.' . '</info>');
     }
 }

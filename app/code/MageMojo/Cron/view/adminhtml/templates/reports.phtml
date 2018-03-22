@@ -14,13 +14,13 @@
 ?>
 <table width="100%" border="1">
 <tr>
-<td><b>Job Code</b></td>
-<td><b>Running</b></td>
-<td><b>Success</b></td>
-<td><b>Pending</b></td>
-<td><b>Missed</b></td>
-<td><b>Error</b></td>
-<td><b>Last Executed</b></td>
+<td style="padding: 4px;"><b>Job Code</b></td>
+<td style="padding: 4px;"><b>Running</b></td>
+<td style="padding: 4px;"><b>Success</b></td>
+<td style="padding: 4px;"><b>Pending</b></td>
+<td style="padding: 4px;"><b>Missed</b></td>
+<td style="padding: 4px;"><b>Error</b></td>
+<td style="padding: 4px;"><b>Last Executed</b></td>
 </tr>
 <?php
   $reports = $block->getReport();
@@ -47,13 +47,13 @@
     }
     #print_r($job);
     print '<tr>';
-    print '<td>'.$job_code.'</td>';
-    print '<td>'.$job["running"].'</td>';
-    print '<td>'.$job["success"].'</td>';
-    print '<td>'.$job["pending"].'</td>';
-    print '<td>'.$job["missed"].'</td>';
-    print '<td>'.$job["error"].'</td>';
-    print '<td>'.$executed.'</td>';
+    print '<td style="padding: 4px;">'.$job_code.'</td>';
+    print '<td style="padding: 4px;">'.$job["running"].'</td>';
+    print '<td style="padding: 4px;">'.$job["success"].'</td>';
+    print '<td style="padding: 4px;">'.$job["pending"].'</td>';
+    print '<td style="padding: 4px;">'.$job["missed"].'</td>';
+    print '<td style="padding: 4px;">'.$job["error"].'</td>';
+    print '<td style="padding: 4px;">'.$executed.'</td>';
     print '</tr>';
   }
 
@@ -64,14 +64,14 @@
 <h2>Errors</h2>
 <table width="100%" border="1">
 <tr>
-<td><b>Job Code</b></td>
-<td><b>Error</b></td>
+<td style="padding: 4px;"><b>Job Code</b></td>
+<td style="padding: 4px;"><b>Error</b></td>
 <?php
 $errors = $block->getErrorReport();
 foreach($errors as $error) {
   print '<tr>';
-  print '<td>'.$error["job_code"].'</td>';
-  print '<td>'.$error["messages"].'</td>';
+  print '<td style="padding: 4px;">'.$error["job_code"].'</td>';
+  print '<td style="padding: 4px;">'.$error["messages"].'</td>';
   print '</tr>';
 }
 ?>
