@@ -343,9 +343,14 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             $runtime = $this->prepareStub($jobconfig,$stub);
             $cmd = $this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
             $pid = exec($cmd);
-            $this->setPid('cron.'.$pid,$job["schedule_id"]);
-            $this->resource->setJobStatus($job["schedule_id"],'running',NULL);
-            $jobcount++;
+            if (is_numeric($pid)) {
+              $this->setPid('cron.'.$pid,$job["schedule_id"]);
+              $this->resource->setJobStatus($job["schedule_id"],'running',NULL);
+              $jobcount++;
+            } else {
+              #Error output from command line
+              $this->resource->setJobStatus($job["schedule_id"],'error',$pid);
+            }
 
             #If more than one job of the same code was returned mark one as missed
             if ($job["job_count"] > 1) {
