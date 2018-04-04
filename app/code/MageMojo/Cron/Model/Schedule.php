@@ -30,7 +30,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $jobs = array();
       foreach($this->cronconfig->getJobs() as $group) {
         foreach($group as $job) {
-          $jobs[$job["name"]] = $job;
+          if(isset($job["name"])) {
+            $jobs[$job["name"]] = $job;
+          }
         }
       }
       $this->config = $jobs;
