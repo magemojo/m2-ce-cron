@@ -34,7 +34,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             if (!isset($job["schedule"])) {
               if (isset($job["config_path"])) {
                 $schedule =  $this->resource->getConfigValue($job["config_path"],0,'default');
-                $job["schedule"] = $schedule;
+                if ($schedule) {
+                  $job["schedule"] = $schedule;
+                }
               }
             }
             $jobs[$job["name"]] = $job;
@@ -349,8 +351,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
             $runtime = $this->prepareStub($jobconfig,$stub);
-            $cmd = $this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+
+            #change to base directory and run stub code to execute cron method asychronously, should return pid id
+            $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
             $pid = exec($cmd);
+
+            #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
               $this->setPid('cron.'.$pid,$job["schedule_id"]);
               $this->resource->setJobStatus($job["schedule_id"],'running',NULL);
