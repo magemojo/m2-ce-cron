@@ -264,11 +264,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      *
      * @return string
      */
-    public function prepareStub($jobconfig, $stub) {
+    public function prepareStub($jobconfig, $stub, $scheduleid) {
       $code = trim($stub);
       $code = str_replace('<<basedir>>',$this->basedir,$code);
       $code = str_replace('<<method>>',$jobconfig["method"],$code);
       $code = str_replace('<<instance>>',$jobconfig["instance"],$code);
+      $code = str_replace('<<scheduleid>>',$scheduleid,$code);
       return $code;
     }
 
@@ -350,7 +351,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
-            $runtime = $this->prepareStub($jobconfig,$stub);
+            $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
 
             #change to base directory and run stub code to execute cron method asychronously, should return pid id
             $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
