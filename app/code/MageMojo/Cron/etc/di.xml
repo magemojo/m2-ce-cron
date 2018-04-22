@@ -1,4 +1,20 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 <preference for="Magento\Cron\Console\Command\CronCommand" type="MageMojo\Cron\Console\Command\CronCommand" />
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="cron_settings_form_data_source"
+                      xsi:type="string">MageMojo\Cron\Model\ResourceModel\UI\Settings\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="MageMojo\Cron\Model\ResourceModel\UI\Settings\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">core_config_data</argument>
+            <argument name="resourceModel"
+                      xsi:type="string">MageMojo\Cron\Model\ResourceModel\Settings\Collection</argument>
+        </arguments>
+    </virtualType>
 </config>

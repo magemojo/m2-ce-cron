@@ -1,14 +1,9 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-<head>
-     <title>
-         Cron Settings
-     </title>
-</head>
-        <body>
-            <referenceContainer name="content">
-                <block class="MageMojo\Cron\Block\Adminhtml\Settings" name="magemojocron" template="MageMojo_Cron::settings.phtml"/>
-            </referenceContainer>
-        </body>
-
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="magemojo_cron_settings_form"/>
+        </referenceContainer>
+    </body>
 </page>
