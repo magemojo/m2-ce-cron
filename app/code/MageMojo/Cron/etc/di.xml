@@ -1,4 +1,19 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-<preference for="Magento\Cron\Console\Command\CronCommand" type="MageMojo\Cron\Console\Command\CronCommand" />
+    <preference for="Magento\Cron\Console\Command\CronCommand" type="MageMojo\Cron\Console\Command\CronCommand" />
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="cronExecute" xsi:type="object">MageMojo\Cron\Console\Command\CronExecuteCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\App\AreaList">
+        <arguments>
+            <argument name="areas" xsi:type="array">
+                <item name="crontab" xsi:type="null" />
+            </argument>
+        </arguments>
+    </type>
 </config>
+

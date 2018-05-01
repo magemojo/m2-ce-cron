@@ -76,6 +76,14 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         array_push($insertdata,array('job_code' => $job["name"], 'status' => 'pending', 'created_at' => date('Y-m-d H:i:s',$created), 'scheduled_at' => date('Y-m-d H:i:s',$time)));
       }
       $connection->insertMultiple($this->getTable('cron_schedule'), $insertdata);
+
+      $select = $connection->select()
+          ->from($this->getTable('cron_schedule'))
+          ->where('job_code = ?', $job["name"])
+          ->where('status = ?', 'pending')
+          ->where('created_at = ?', date('Y-m-d H:i:s',$created));
+      $result = $connection->fetchAll($select);
+      return $result;
     }
 
     /**
@@ -225,3 +233,4 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       return $result;
     }
 }
+

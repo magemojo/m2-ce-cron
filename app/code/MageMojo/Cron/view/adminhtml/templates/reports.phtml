@@ -21,6 +21,7 @@
 <td style="padding: 4px;"><b>Missed</b></td>
 <td style="padding: 4px;"><b>Error</b></td>
 <td style="padding: 4px;"><b>Last Executed</b></td>
+<td style="padding: 4px;"><b>Actions</b></td>
 </tr>
 <?php
   $reports = $block->getReport();
@@ -54,6 +55,7 @@
     print '<td style="padding: 4px;">'.$job["missed"].'</td>';
     print '<td style="padding: 4px;">'.$job["error"].'</td>';
     print '<td style="padding: 4px;">'.$executed.'</td>';
+    print '<td style="padding: 4px;"><a href="'.$block->getUrl("magemojocron/reports/execute",array("jobcode" => $job_code)).'">Execute</a></td>';
     print '</tr>';
   }
 
@@ -81,3 +83,4 @@ foreach($errors as $error) {
 <br/>
 <br/>
 * Parent Cron Process Terminated Abnomally means the parent cron service was killed or disabled while this job was running, it most likely successfully completed, but the final status could not be determined.
+

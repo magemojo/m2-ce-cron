@@ -351,11 +351,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
-            $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
 
-            #change to base directory and run stub code to execute cron method asychronously, should return pid id
-            $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
-            $pid = exec($cmd);
+            $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
+			#change to base directory and run stub code to execute cron method asychronously, should return pid id
+			$cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+      		$pid = exec($cmd);
 
             #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
@@ -381,6 +381,35 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         sleep(5);
       }
     }
+
+    public function executeImmediate($jobname) {
+      #Force UTC
+      date_default_timezone_set('UTC');
+      $this->basedir = $this->directorylist->getRoot();
+
+      #Get the code stub that executes individual crons
+	  $stub = file_get_contents(__DIR__.'/stub.txt');
+
+      $this->getConfig();
+      $jobconfig = $this->getJobConfig($jobname);
+
+      #create a schedule
+      $schedule = array('sceduled_at' => time());
+      $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
+
+
+      $instance = ObjectManager::getInstance()->get($jobconfig["instance"]);
+      $schedule = ObjectManager::getInstance()->get("\Magento\Cron\Model\Schedule")->load($scheduled[0]["schedule_id"]);
+
+      $this->resource->setJobStatus($scheduled[0]["schedule_id"],'running',NULL);
+      try {
+        $instance->{$jobconfig["method"]}($schedule);
+        $this->resource->setJobStatus($scheduled[0]["schedule_id"],'success',NULL);
+      } catch (Exception $e) {
+        $this->resource->setJobStatus($job["schedule_id"],'error',$e->message);
+      }
+    }
+
 
     /**
      * Check for processes that have gone insane and handle the errors
@@ -446,4 +475,5 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
     }
 }
+
 
