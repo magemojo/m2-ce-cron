@@ -339,6 +339,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
               $this->resource->setJobStatus($scheduleid,'success',$output);
             }
             $this->unsetPid('cron.'.$pid);
+            $this->unsetPid('schedule.".$scheduleid);
           } else {
             $jobcount++;
           }
@@ -365,6 +366,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             } else {
               #Error output from command line
               $this->resource->setJobStatus($job["schedule_id"],'error',$pid);
+              $this->unsetPid('schedule.".$scheduleid);
             }
 
             #If more than one job of the same code was returned mark one as missed
@@ -452,7 +454,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $filelist = scandir($this->basedir.'/var/cron/');
       $scheduleids = array();
       foreach ($filelist as $file) {
-        if (strpos($file,'schedule.') === true) {
+        if (strpos($file,'schedule.') !== false) {
           array_push($scheduleids,explode('.',$file)[1]);
         }
       }
