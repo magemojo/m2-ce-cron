@@ -3,7 +3,7 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
-![Version 1.1.2](https://img.shields.io/badge/Version-1.1.2-green.svg)
+![Version 1.1.3](https://img.shields.io/badge/Version-1.1.2-green.svg)
 
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
