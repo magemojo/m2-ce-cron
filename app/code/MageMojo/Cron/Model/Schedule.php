@@ -339,7 +339,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
               $this->resource->setJobStatus($scheduleid,'success',$output);
             }
             $this->unsetPid('cron.'.$pid);
-            $this->unsetPid('schedule.".$scheduleid);
+            $this->unsetPid('schedule.'.$scheduleid);
           } else {
             $jobcount++;
           }
@@ -366,7 +366,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             } else {
               #Error output from command line
               $this->resource->setJobStatus($job["schedule_id"],'error',$pid);
-              $this->unsetPid('schedule.".$scheduleid);
+              $this->unsetPid('schedule.'.$scheduleid);
             }
 
             #If more than one job of the same code was returned mark one as missed
