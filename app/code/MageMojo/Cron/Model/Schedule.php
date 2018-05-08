@@ -38,6 +38,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
               }
             }
           }
+          $job["name"] = $name;
           $jobs[$name] = $job;
         }
       }
