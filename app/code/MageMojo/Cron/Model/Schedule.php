@@ -29,18 +29,16 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     public function getConfig() {
       $jobs = array();
       foreach($this->cronconfig->getJobs() as $group) {
-        foreach($group as $job) {
-          if(isset($job["name"])) {
-            if (!isset($job["schedule"])) {
-              if (isset($job["config_path"])) {
-                $schedule =  $this->resource->getConfigValue($job["config_path"],0,'default');
-                if ($schedule) {
-                  $job["schedule"] = $schedule;
-                }
+        foreach($group as $name=>$job) {
+          if (!isset($job["schedule"])) {
+            if (isset($job["config_path"])) {
+              $schedule =  $this->resource->getConfigValue($job["config_path"],0,'default');
+              if ($schedule) {
+                $job["schedule"] = $schedule;
               }
             }
-            $jobs[$job["name"]] = $job;
           }
+          $jobs[$name] = $job;
         }
       }
       $this->config = $jobs;
