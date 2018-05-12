@@ -57,8 +57,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ```bash
 bin/magento module:enable MageMojo_Cron
 bin/magento setup:upgrade
-bin/magento module:enable MageMojo_Cron
-bin/magento setup:upgrade
 bin/magento setup:di:compile
 bin/magento setup:static-content:deploy
 ```
