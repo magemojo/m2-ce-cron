@@ -48,9 +48,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **History Retention** - The number of days history to keep in the cron_schedule table. Default 1 (1 day).
 
-## Manual Install
-
-- [Download this ZIP](https://github.com/magemojo/m2-ce-cron/archive/master.zip) and extract the app folder into your webroot.
+## Composer Install
 
 - Run these commands in your terminal:
 
