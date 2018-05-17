@@ -57,6 +57,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ```bash
 composer require magemojo/m2-ce-cron
 bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy
 ```
 - Log into your admin and set your options under System -> Cron Settings
 
