@@ -105,7 +105,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * Get all pending jobs for a job_code
+     * Get pending jobs
      *
      * @return array
      */
@@ -118,6 +118,26 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             ->group('job_code');
       $result = $connection->fetchAll($select);
       return $result;
+    }
+
+    /**
+     * Get all pending jobs
+     *
+     * @return array
+     */
+    public function getAllPendingJobs() {
+      $connection = $this->getConnection();
+      $select = $connection->select()
+            ->from($this->getTable('cron_schedule'),['schedule_id','job_code','scheduled_at'])
+            ->where('status = ?', 'pending')
+            ->order('job_code')
+            ->order('scheduled_at', 'desc');
+      $result = $connection->fetchAll($select);
+      $jobs = array();
+      foreach ($result as $row) {
+        $jobs[$row["schedule_id"]] = $row;
+      }
+      return $jobs;
     }
 
     /**

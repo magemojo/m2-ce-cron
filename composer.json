@@ -1,0 +1,26 @@
+{
+    "name": "magemojo/m2-ce-cron",
+    "description": "Replacement package for Magento 2 Cron Functionality",
+    "type": "magento2-module",
+    "keywords": ["magento2","cron"],
+    "homepage": "https://github.com/magemojo/",
+    "license": "MIT",
+    "version": "1.1.6",
+     "authors": [
+            {
+                "name": "MageMojo",
+                "homepage": "https://github.com/magemojo/"
+            }
+        ],
+    "require": {
+        "php": ">=7.0.0"
+    }
+    "autoload": {
+      "files": [
+        "registration.php"
+      ],
+      "psr-4": {
+        "MageMojo\\Cron\\": ""
+    }
+  }
+}

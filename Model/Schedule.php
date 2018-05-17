@@ -63,6 +63,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       $pid = getmypid();
       $this->setPid('cron.pid',$pid);
+      $this->pendingjobs = $this->resource->getAllPendingJobs();
     }
 
     /**
@@ -186,7 +187,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
         $i = explode('/',$e);
         if (count($i) == 2) {
-          if (ctype_digit($value / $i[1])) {
+          if (is_int($value / $i[1])) {
             return true;
           }
         }
@@ -299,6 +300,36 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
+     * Get all pending jobs
+     *
+     * @return collection
+     */
+    function getPendingJobs() {
+      $jobs = array();
+      foreach ($this->pendingjobs as $job) {
+        if (($job["status"] == 'pending') and ($job["scheduled_at"] < date('Y-m-d H:i:s',time()))) {
+          if (isset($jobs[$job["job_code"]])) {
+            $jobs[$job["job_code"]]["count"] = $jobs[$job["job_code"]]["count"] + 1;
+          } else {
+            $jobs[$job["job_code"]] = $job;
+            $jobs[$job["job_code"]]["count"] = 1;
+          }
+        }
+      }
+
+    }
+
+    /**
+     * Set the status of a job
+     *
+     * @return void
+     */
+    function setJobStatus($scheduleid,$status,$output) {
+      $this->pendingjobs[$scheduleid]["status"] = $status;
+      $this->resource->setJobStatus($scheduleid,$status,$output);
+    }
+
+    /**
      * Service loop for running crons
      *
      * @return void
@@ -323,6 +354,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           print "Creating schedule\n";
           $this->createSchedule($this->lastJobTime, $this->lastJobTime + 3600);
           $this->lastJobTime = $this->resource->getLastJobTime();
+          $this->pendingjobs = $this->resource->getAllPendingJobs();
         }
 
         #Checking running jobs
@@ -333,9 +365,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             $output = $this->getJobOutput($scheduleid);
             #If output had "error" in the text, assume it errored
             if (strpos(strtolower($output),'error') > 0) {
-              $this->resource->setJobStatus($scheduleid,'error',$output);
+              $this->setJobStatus($scheduleid,'error',$output);
             } else {
-              $this->resource->setJobStatus($scheduleid,'success',$output);
+              $this->setJobStatus($scheduleid,'success',$output);
             }
             $this->unsetPid('cron.'.$pid);
             $this->unsetPid('schedule.'.$scheduleid);
@@ -360,11 +392,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
               $this->setPid('cron.'.$pid,$job["schedule_id"]);
-              $this->resource->setJobStatus($job["schedule_id"],'running',NULL);
+              $this->setJobStatus($job["schedule_id"],'running',NULL);
               $jobcount++;
             } else {
               #Error output from command line
-              $this->resource->setJobStatus($job["schedule_id"],'error',$pid);
+              $this->setJobStatus($job["schedule_id"],'error',$pid);
               $this->unsetPid('schedule.'.$job["schedule_id"]);
             }
 
@@ -395,7 +427,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $jobconfig = $this->getJobConfig($jobname);
 
       #create a schedule
-      $schedule = array('sceduled_at' => time());
+      $schedule = array('scheduled_at' => time());
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
 
 
