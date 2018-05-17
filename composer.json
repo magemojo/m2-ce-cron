@@ -5,7 +5,6 @@
     "keywords": ["magento2","cron"],
     "homepage": "https://github.com/magemojo/",
     "license": "MIT",
-    "version": "1.2.0",
      "authors": [
             {
                 "name": "MageMojo",
