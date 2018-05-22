@@ -95,7 +95,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function unsetPid($pid) {
-      unlink($this->basedir.'/var/cron/'.$pid);
+      $pidfile = $this->basedir.'/var/cron/'.$pid;
+      if(file_exists($pidfile)) {
+        unlink($pidfile);
+      }
     }
 
     /**
