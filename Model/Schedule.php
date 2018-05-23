@@ -473,6 +473,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       $diff = array_diff($running,$schedules);
       foreach ($diff as $scheduleid) {
+        if (!isset($pids["scheduleid"])) {
+          continue;
+        }
+
         $pid = $pids["scheduleid"];
         print "Found orphaned pid file for schedule_id ".$scheduleid."\n";
         $this->unsetPid('cron.'.$pid);
