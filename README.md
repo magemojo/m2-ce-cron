@@ -42,7 +42,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Maximum Cron Processes** - The number of cron threads running in parallel.  This option is the sum of all defined jobs.  Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed. Default 3.
 
-**PHP Binary Name / Path** - The name of your php binary you run from the shell.  Usually php or php70.  You can optionally include the full path to the binary. Default php.
+**PHP Binary Name / Path** - The name of your php binary you run from the shell.  Usually php or php70.  You can optionally include the full path to the binary. Default php. You can also add inline options here such as php -dmemory_limit=8096M If you want to have a custom ini value.
 
 **Max Load Average** - Defined by the php function sys.getloadavg() / number of cpu cores. The function sys.getloadavg() is reported 1.0 for each core in use, just like the load average reported in top.  The number of cpu cores is pulled from /proc/cpuinfo and load average is divided by this number. Example: If you have 8 cores and you're using 6 then this is returned as 0.75. If your Max Load Average is 0.76 your crons will not run. Your load average falls to 0.74.  Your crons will run.  Any cron that was scheduled to run but didn't will be run.  If the same cron was missed multiple times, the most recent job will run, and the rest will be marked as missed. Default is 0.75 (75% of your available cpu).
 
