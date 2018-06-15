@@ -2,23 +2,44 @@
 namespace MageMojo\Cron\Model;
 
 use Magento\Framework\App\ObjectManager;
+use Magento\Framework\App\Filesystem\directoryList;
+use Magento\Framework\Exception\FileSystemException;
 
 class Schedule extends \Magento\Framework\Model\AbstractModel
 {
+    const VAR_FOLDER_PATH = BP . '/'. directoryList::VAR_DIR;
+    const CRON_FOLDER_PATH = '/cron/schedule';
+    
     private $cronconfig;
-    private $directorylist;
-    private $cronschedule;
+    private $directoryList;
     private $resource;
     private $maintenance;
-
-    public function __construct(\Magento\Cron\Model\Config $cronconfig,
-      \Magento\Framework\App\Filesystem\DirectoryList $directorylist,
-      \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
-      \Magento\Framework\App\MaintenanceMode $maintenance) {
-      $this->cronconfig = $cronconfig;
-      $this->directorylist = $directorylist;
-      $this->resource = $resource;
-      $this->maintenance = $maintenance;
+    private $basedir;
+    /**
+     * @var \Magento\Framework\Filesystem\Driver\File
+     */
+    private $file;
+    
+    /**
+     * Schedule constructor.
+     * @param \Magento\Cron\Model\Config $cronconfig
+     * @param directoryList $directoryList
+     * @param ResourceModel\Schedule $resource
+     * @param \Magento\Framework\App\MaintenanceMode $maintenance
+     * @param \Magento\Framework\Filesystem\Driver\File $file
+     */
+    public function __construct(
+        \Magento\Cron\Model\Config $cronconfig,
+        directoryList $directoryList,
+        \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
+        \Magento\Framework\App\MaintenanceMode $maintenance,
+        \Magento\Framework\Filesystem\Driver\File $file
+    ) {
+        $this->cronconfig = $cronconfig;
+        $this->directoryList = $directoryList;
+        $this->resource = $resource;
+        $this->maintenance = $maintenance;
+        $this->file = $file;
     }
 
     /**
@@ -72,8 +93,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return string
      */
     public function checkPid($pidfile) {
-      if (file_exists($this->basedir.'/var/cron/'.$pidfile)){
-        $scheduleid = file_get_contents($this->basedir.'/var/cron/'.$pidfile);
+      if (file_exists(self::VAR_FOLDER_PATH.'/cron/'.$pidfile)){
+        $scheduleid = file_get_contents(self::VAR_FOLDER_PATH.'/cron/'.$pidfile);
         return $scheduleid;
       }
       return false;
@@ -86,7 +107,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      */
     public function setPid($file,$scheduleid) {
       #print 'file='.$file;
-      file_put_contents($this->basedir.'/var/cron/'.$file,$scheduleid);
+      file_put_contents(self::VAR_FOLDER_PATH.'/cron/'.$file,$scheduleid);
     }
 
     /**
@@ -95,7 +116,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function unsetPid($pid) {
-      $pidfile = $this->basedir.'/var/cron/'.$pid;
+      $pidfile = self::VAR_FOLDER_PATH.'/cron/'.$pid;
       if(file_exists($pidfile)) {
         unlink($pidfile);
       }
@@ -108,13 +129,13 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      */
     public function getRunningPids() {
       $pids = array();
-      $filelist = scandir($this->basedir.'/var/cron/');
+      $filelist = scandir(self::VAR_FOLDER_PATH.'/cron/');
 
       foreach ($filelist as $file) {
         if ($file != 'cron.pid') {
           $pid = str_replace('cron.','',$file);
           if (is_numeric($pid)) {
-            $pids[$pid] = file_get_contents($this->basedir.'/var/cron/'.$file);
+            $pids[$pid] = file_get_contents(self::VAR_FOLDER_PATH.'/cron/'.$file);
           }
         }
       }
@@ -139,7 +160,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return string
      */
     public function getJobOutput($scheduleid) {
-      $file = $this->basedir.'/var/cron/schedule.'.$scheduleid;
+      $file = self::VAR_FOLDER_PATH.self::CRON_FOLDER_PATH.".{$scheduleid}";
       if (file_exists($file)){
         return trim(file_get_contents($file));
       }
@@ -233,6 +254,15 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
       }
     }
+    
+    public function checkCronFolderExistence()
+    {
+        try {
+            $this->file->createDirectory(self::VAR_FOLDER_PATH.self::CRON_FOLDER_PATH);
+        } catch (FileSystemException $e) {
+            echo "Can't create folder in following path: " . self::VAR_FOLDER_PATH . self::CRON_FOLDER_PATH.PHP_EOL;
+        }
+    }
 
      /**
       * Initial startup process
@@ -240,7 +270,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       * @return void
      */
     public function execute() {
-      $this->basedir = $this->directorylist->getRoot();
+      $this->basedir = $this->directoryList->getRoot();
+      $this->checkCronFolderExistence();
       print "Healthchecking Cron Service\n";
       $pid = $this->checkPid('cron.pid');
       if (!$this->checkProcess($pid) or (!$pid)) {
@@ -421,7 +452,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     public function executeImmediate($jobname) {
       #Force UTC
       date_default_timezone_set('UTC');
-      $this->basedir = $this->directorylist->getRoot();
+      $this->basedir = $this->directoryList->getRoot();
 
       #Get the code stub that executes individual crons
 	  $stub = file_get_contents(__DIR__.'/stub.txt');
@@ -489,7 +520,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return array
      */
     public function getScheduleOutputIds() {
-      $filelist = scandir($this->basedir.'/var/cron/');
+      $filelist = scandir(self::VAR_FOLDER_PATH.'/cron/');
       $scheduleids = array();
       foreach ($filelist as $file) {
         if (strpos($file,'schedule.') !== false) {
@@ -505,7 +536,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function cleanup() {
-      $this->basedir = $this->directorylist->getRoot();
+      $this->basedir = $this->directoryList->getRoot();
+      $this->checkCronFolderExistence();
       $this->initialize();
       $scheduleids = $this->resource->cleanSchedule($this->history);
       $fileids = $this->getScheduleOutputIds();
