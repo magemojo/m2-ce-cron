@@ -13,16 +13,19 @@
   print '<br/>';
 ?>
 <table width="100%" border="1">
+<thead>
 <tr>
-<td style="padding: 4px;"><b>Job Code</b></td>
-<td style="padding: 4px;"><b>Running</b></td>
-<td style="padding: 4px;"><b>Success</b></td>
-<td style="padding: 4px;"><b>Pending</b></td>
-<td style="padding: 4px;"><b>Missed</b></td>
-<td style="padding: 4px;"><b>Error</b></td>
-<td style="padding: 4px;"><b>Last Executed</b></td>
-<td style="padding: 4px;"><b>Actions</b></td>
+<th style="padding: 4px;"><b>Job Code</b></th>
+<th style="padding: 4px;"><b>Running</b></th>
+<th style="padding: 4px;"><b>Success</b></th>
+<th style="padding: 4px;"><b>Pending</b></th>
+<th style="padding: 4px;"><b>Missed</b></th>
+<th style="padding: 4px;"><b>Error</b></th>
+<th style="padding: 4px;"><b>Last Executed</b></th>
+<th style="padding: 4px;"><b>Actions</b></th>
 </tr>
+</thead>
+<tbody>
 <?php
   $reports = $block->getReport();
 
@@ -60,14 +63,19 @@
   }
 
 ?>
+</tbody>
 </table>
 <br/>
 <br/>
 <h2>Errors</h2>
 <table width="100%" border="1">
+<thead>
 <tr>
-<td style="padding: 4px;"><b>Job Code</b></td>
-<td style="padding: 4px;"><b>Error</b></td>
+<th style="padding: 4px;"><b>Job Code</b></th>
+<th style="padding: 4px;"><b>Error</b></th>
+</tr>
+</thead>
+<tbody>
 <?php
 $errors = $block->getErrorReport();
 foreach($errors as $error) {
@@ -77,7 +85,8 @@ foreach($errors as $error) {
   print '</tr>';
 }
 ?>
-</tr>
+
+</tbody>
 </table>
 
 <br/>
