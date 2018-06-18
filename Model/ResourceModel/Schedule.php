@@ -95,10 +95,10 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       $connection = $this->getConnection();
       $updatedata = array('status' => $status);
       $updatedata["messages"] = $output;
-      if ($status = 'complete') {
+      if ($status == 'success') {
         $updatedata["finished_at"] = date('Y-m-d H:i:s',time());
       }
-      if ($status = 'running') {
+      if ($status == 'running') {
         $updatedata["executed_at"] = date('Y-m-d H:i:s',time());
       }
       $connection->update($this->getTable('cron_schedule'),$updatedata,['schedule_id = ?' => $scheduleid]);
