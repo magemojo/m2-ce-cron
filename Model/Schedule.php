@@ -516,7 +516,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       #Detect a coup and acquiesce
       $pid = getmypid();
       $execpid = $this->checkPid('cron.pid');
-      if ($pid !== $execpid){
+      if ($pid != $execpid){
         exit;
       }
     }
