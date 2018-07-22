@@ -518,6 +518,13 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         print "Found orphaned pid file for schedule_id ".$scheduleid."\n";
         $this->unsetPid('cron.'.$pid);
       }
+
+      #Detect a coup and acquiesce
+      $pid = getmypid();
+      $execpid = $this->checkPid('cron.pid');
+      if ($pid != $execpid){
+        exit;
+      }
     }
 
     /**
