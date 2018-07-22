@@ -9,7 +9,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 {
     const VAR_FOLDER_PATH = BP . '/'. directoryList::VAR_DIR;
     const CRON_FOLDER_PATH = '/cron/schedule';
-    
+
     private $cronconfig;
     private $directoryList;
     private $resource;
@@ -19,7 +19,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @var \Magento\Framework\Filesystem\Driver\File
      */
     private $file;
-    
+
     /**
      * Schedule constructor.
      * @param \Magento\Cron\Model\Config $cronconfig
@@ -85,6 +85,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $pid = getmypid();
       $this->setPid('cron.pid',$pid);
       $this->pendingjobs = $this->resource->getAllPendingJobs();
+      $this->loadavgtest = true;
+      if (!is_readable('/proc/cpuinfo')) {
+        $this->loadavgtest = false;
+        print 'Unable to test loadaverage disabling loadaverage checking';
+      }
     }
 
     /**
@@ -254,7 +259,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
       }
     }
-    
+
     public function checkCronFolderExistence()
     {
         try {
@@ -313,24 +318,25 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return bool
      */
     public function canRunJobs($jobcount, $pending) {
-      $cpunum = exec('cat /proc/cpuinfo | grep processor | wc -l');
-      if (!$cpunum) {
-        $cpunum = 1;
-      }
-      if ((sys_getloadavg()[0] / $cpunum) > $this->maxload) {
-        print "Crons suspended due to high load average: ".(sys_getloadavg()[0] / $cpunum)."\n";
+      if ($this->loadavgtest) {
+        $cpunum = exec('cat /proc/cpuinfo | grep processor | wc -l');
+        if (!$cpunum) {
+          $cpunum = 1;
+        }
+        if ((sys_getloadavg()[0] / $cpunum) > $this->maxload) {
+          print "Crons suspended due to high load average: ".(sys_getloadavg()[0] / $cpunum)."\n";
+          return false;
+        }
       }
       $maint = $this->maintenance->isOn();
       if ($maint) {
          print "Crons suspended due to maintenance mode being enabled \n";
+         return false;
       }
-      if (($jobcount < $this->simultaniousJobs)
-        and (count($pending) > 0)
-        and ((sys_getloadavg()[0] / $cpunum) < $this->maxload)
-        and (!$maint)) {
-        return true;
+      if ($jobcount < $this->simultaniousJobs) {
+        return false;
       }
-      return false;
+      return true;
     }
 
     /**
