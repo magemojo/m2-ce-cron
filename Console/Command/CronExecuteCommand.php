@@ -70,7 +70,6 @@ class CronExecuteCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-    #print_r($input);
     	$this->schedule->executeImmediate($input->getOption(self::INPUT_KEY_JOBCODE));
     }
 }
