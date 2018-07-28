@@ -333,7 +333,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
          print "Crons suspended due to maintenance mode being enabled \n";
          return false;
       }
-      if ($jobcount < $this->simultaniousJobs) {
+      if ($jobcount > $this->simultaniousJobs) {
         return false;
       }
       return true;
