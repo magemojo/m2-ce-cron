@@ -328,7 +328,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           return false;
         }
       }
-      $maint = $this->maintenance->isOn();
+      $exempt = $this->maintenance->getAddressInfo();
+      /* Suspend crons in maintenance mode if no internal testing IPs are present */
+      $maint = $this->maintenance->isOn() && empty($exempt);
       if ($maint) {
          print "Crons suspended due to maintenance mode being enabled \n";
          return false;
