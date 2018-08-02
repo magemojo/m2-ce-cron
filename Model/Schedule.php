@@ -418,7 +418,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
         #Get pending jobs
         $pending = $this->resource->getPendingJobs();
-        while ($this->canRunJobs($jobcount, $pending)) {
+        while (count($pending) && $this->canRunJobs($jobcount, $pending)) {
           $job = array_pop($pending);
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
