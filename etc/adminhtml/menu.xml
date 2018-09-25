@@ -2,7 +2,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
       <add id="MageMojo_Cron::heading" title="MageMojo" translate="title" module="MageMojo_Cron" parent="Magento_Backend::system" sortOrder="100" dependsOnModule="MageMojo_Cron" resource="MageMojo_Cron::heading"/>
-      <add id="MageMojo_Cron::settings" title="Cron Settings" translate="title" module="MageMojo_Cron" parent="MageMojo_Cron::heading" sortOrder="10" dependsOnModule="MageMojo_Cron" action="magemojocron/settings/index" resource="MageMojo_Cron::settings"/>
       <add id="MageMojo_Cron::reports" title="Cron Report" translate="title" module="MageMojo_Cron" parent="MageMojo_Cron::heading" sortOrder="20" dependsOnModule="MageMojo_Cron" action="magemojocron/reports/index" resource="MageMojo_Cron::reports"/>
     </menu>
 </config>

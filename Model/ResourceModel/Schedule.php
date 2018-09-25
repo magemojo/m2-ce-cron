@@ -9,49 +9,6 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * Get a value from core_config_data
-     *
-     * @return string
-     */
-    public function getConfigValue($path,$scope,$scopeid) {
-      #making our own function for this because it doesnt't work anyplace consistantly
-      $connection = $this->getConnection();
-      $select = $connection->select()
-        ->from($this->getTable('core_config_data'),['value'])
-        ->where('path = ?',  $path)
-        ->where('scope_id = ?', $scopeid)
-        ->where('scope = ?', $scope);
-      $result = $connection->fetchOne($select);
-      return $result;
-    }
-
-    /**
-     * Set a value in core_config_data
-     *
-     * @return void
-     */
-    public function setConfigValue($path,$scope,$scopeid,$value) {
-      #making our own function for this because it doesnt't work anyplace consistantly
-      $connection = $this->getConnection();
-      $updatedata = array('value' => $value);
-      $connection->update($this->getTable('core_config_data'),$updatedata,['path = ?' => $path,'scope_id = ?' => $scopeid,'scope = ?' => $scope]);
-    }
-
-    /**
-     * Get all magemojo/cron values from core_config_data
-     *
-     * @return void
-     */
-    public function getSettings() {
-      $connection = $this->getConnection();
-
-      $select = $connection->select()->from($this->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/%');
-      $result = $connection->fetchAll($select);
-
-      return $result;
-    }
-
-    /**
      * Get the max date scheduled from cron_schedule
      *
      * @return timestamp

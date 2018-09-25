@@ -50,7 +50,7 @@ class Reports extends \Magento\Framework\View\Element\Template
      */
     public function getLocalTimezone()
     {
-        return $this->resourceconfig->getConfigValue('general/locale/timezone', 'default', 0);
+        return $this->_scopeConfig->getValue('general/locale/timezone');
     }
 
 }
