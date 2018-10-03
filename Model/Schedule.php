@@ -462,9 +462,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       date_default_timezone_set('UTC');
       $this->basedir = $this->directoryList->getRoot();
 
-      #Get the code stub that executes individual crons
-	  $stub = file_get_contents(__DIR__.'/stub.txt');
-
       $this->getConfig();
       $jobconfig = $this->getJobConfig($jobname);
 
@@ -472,6 +469,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $schedule = array('scheduled_at' => time());
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
 
+      $state = ObjectManager::getInstance()->get("Magento\Framework\App\State");
+      $state->setAreaCode("crontab");
 
       $instance = ObjectManager::getInstance()->get($jobconfig["instance"]);
       $schedule = ObjectManager::getInstance()->get("\Magento\Cron\Model\Schedule")->load($scheduled[0]["schedule_id"]);
