@@ -49,7 +49,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      */
     public function getConfig() {
       $jobs = array();
-      foreach($this->cronconfig->getJobs() as $group) {
+      $scheduleoverrides = array();
+      foreach($this->cronconfig->getJobs() as $groupname=>$group) {
+        $override =  $this->resource->getConfigValue('system/cron/'.$groupname.'/schedule_generate_every',0,'default');
+        if ($override) {
+          $scheduleoverrides[$groupname] = $override;
+        }
         foreach($group as $name=>$job) {
           if (!isset($job["schedule"])) {
             if (isset($job["config_path"])) {
@@ -60,9 +65,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             }
           }
           $job["name"] = $name;
+          $job["group"] = $groupname;
           $jobs[$name] = $job;
         }
       }
+      $this->scheduleoverrides = $scheduleoverrides;
       $this->config = $jobs;
     }
 
@@ -241,9 +248,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         if (isset($job["schedule"])) {
           $schedule = array();
           $expr = explode(' ',$job["schedule"]);
+          #check if the generate schedule override is set and change the minute expression accordingly
+          if (isset($this->scheduleoverrides[$job["group"]])) {
+            $expr[0] = $this->scheduleoverrides[$job["group"]];
+          }
           $buildtime = (floor($from/60)*60);
           while ($buildtime < $to) {
-            #print $buildtime;
             $buildtime = $buildtime + 60;
             if (($this->checkCronExpression($expr[4],date('w',$buildtime)))
               and ($this->checkCronExpression($expr[3],date('n',$buildtime)))
@@ -427,9 +437,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             $jobconfig = $this->getJobConfig($job["job_code"]);
 
             $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
-			#change to base directory and run stub code to execute cron method asychronously, should return pid id
-			$cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
-      		$pid = exec($cmd);
 
             #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
@@ -563,5 +570,3 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
     }
 }
-
-
