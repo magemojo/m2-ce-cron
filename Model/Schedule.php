@@ -470,7 +470,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
 
       $state = ObjectManager::getInstance()->get("Magento\Framework\App\State");
-      $state->setAreaCode("crontab");
+      if (!$state->getAreaCode()) {
+        $state->setAreaCode("crontab");
+      }
 
       $instance = ObjectManager::getInstance()->get($jobconfig["instance"]);
       $schedule = ObjectManager::getInstance()->get("\Magento\Cron\Model\Schedule")->load($scheduled[0]["schedule_id"]);
