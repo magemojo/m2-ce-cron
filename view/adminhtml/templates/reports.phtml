@@ -12,16 +12,17 @@
   print '<br/>';
   print '<br/>';
 ?>
-<table width="100%" border="1">
+<table width="100%" border="1" id="report">
 <thead>
 <tr>
-<th style="padding: 4px;"><b>Job Code</b></th>
-<th style="padding: 4px;"><b>Running</b></th>
-<th style="padding: 4px;"><b>Success</b></th>
-<th style="padding: 4px;"><b>Pending</b></th>
-<th style="padding: 4px;"><b>Missed</b></th>
-<th style="padding: 4px;"><b>Error</b></th>
-<th style="padding: 4px;"><b>Last Executed</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(0);"><b>Job Code</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(1); cursor: pointer;"><b>Running</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(2)"><b>Success</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(3)"><b>Pending</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(4)"><b>Missed</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(5)"><b>Error</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(6)"><b>Last Executed</b></th>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(7)"><b>Last Runtime</b></th>
 <th style="padding: 4px;"><b>Actions</b></th>
 </tr>
 </thead>
@@ -38,6 +39,7 @@
     }
     if (($report["status"] == 'success' and $jobs[$report["job_code"]]["executed_at"] == 'N/A') or $report["status"] == 'running') {
       $jobs[$report["job_code"]]["executed_at"] = $report["executed_at"];
+      $jobs[$report["job_code"]]["finished_at"] = $report["finished_at"];
     }
     $jobs[$report["job_code"]][$report["status"]] = $report["count"];
   }
@@ -48,6 +50,7 @@
     } else {
       $executed = strtotime($job["executed_at"]);
       $executed = date("Y-m-d h:i:s A",($executed - $timediff));
+      $runtime = strtotime($job["finished_at"]) - strtotime($job["executed_at"]);
     }
     #print_r($job);
     print '<tr>';
@@ -58,6 +61,7 @@
     print '<td style="padding: 4px;">'.$job["missed"].'</td>';
     print '<td style="padding: 4px;">'.$job["error"].'</td>';
     print '<td style="padding: 4px;">'.$executed.'</td>';
+    print '<td style="padding: 4px;">'.$runtime.'s</td>';
     print '<td style="padding: 4px;"><a href="'.$block->getUrl("magemojocron/reports/execute",array("jobcode" => $job_code)).'">Execute</a></td>';
     print '</tr>';
   }
@@ -93,3 +97,59 @@ foreach($errors as $error) {
 <br/>
 * Parent Cron Process Terminated Abnomally means the parent cron service was killed or disabled while this job was running, it most likely successfully completed, but the final status could not be determined.
 
+<script>
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("report");
+  switching = true;
+  // Set the sorting direction to ascending:
+  dir = "asc";
+  /* Make a loop that will continue until
+  no switching has been done: */
+  while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /* Loop through all table rows (except the
+    first, which contains table headers): */
+    for (i = 1; i < (rows.length - 1); i++) {
+      // Start by saying there should be no switching:
+      shouldSwitch = false;
+      /* Get the two elements you want to compare,
+      one from current row and one from the next: */
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /* Check if the two rows should switch place,
+      based on the direction, asc or desc: */
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /* If a switch has been marked, make the switch
+      and mark that a switch has been done: */
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      // Each time a switch is done, increase this count by 1:
+      switchcount ++;
+    } else {
+      /* If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again. */
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+</script>

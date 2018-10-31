@@ -220,7 +220,8 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         'job_code',
         'status',
         'count(*) as count',
-        "max(executed_at) as executed_at"
+        "max(executed_at) as executed_at",
+        "max(finished_at) as finished_at"
       );
       $select = $connection->select()
         ->from($this->getTable('cron_schedule'),$columns)
