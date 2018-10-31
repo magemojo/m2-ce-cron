@@ -241,7 +241,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         if (isset($job["schedule"])) {
           $schedule = array();
           $expr = explode(' ',$job["schedule"]);
-          $buildtime = (round($from/60)*60 + 60);
+          $buildtime = (floor($from/60)*60);
           while ($buildtime < $to) {
             #print $buildtime;
             $buildtime = $buildtime + 60;
