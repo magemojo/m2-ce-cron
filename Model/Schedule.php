@@ -56,6 +56,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $scheduleoverrides[$groupname] = $override;
         }
         foreach($group as $name=>$job) {
+          if (!is_array($job)) continue;
           if (!isset($job["schedule"])) {
             if (isset($job["config_path"])) {
               $schedule =  $this->resource->getConfigValue($job["config_path"],0,'default');
