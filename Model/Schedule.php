@@ -1,6 +1,8 @@
 <?php
 namespace MageMojo\Cron\Model;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\AreaList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\Filesystem\directoryList;
 use Magento\Framework\Exception\FileSystemException;
@@ -481,9 +483,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
 
       $state = ObjectManager::getInstance()->get("Magento\Framework\App\State");
-      if (!$state->getAreaCode()) {
-        $state->setAreaCode("crontab");
-      }
+      $state->setAreaCode("crontab");
+      $areaList = ObjectManager::getInstance()->get(AreaList::class);
+      $areaList->getArea(Area::AREA_CRONTAB)->load(Area::PART_TRANSLATE);
 
       $instance = ObjectManager::getInstance()->get($jobconfig["instance"]);
       $schedule = ObjectManager::getInstance()->get("\Magento\Cron\Model\Schedule")->load($scheduled[0]["schedule_id"]);
