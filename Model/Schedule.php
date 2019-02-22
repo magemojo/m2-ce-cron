@@ -322,6 +322,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $code = str_replace('<<method>>',$jobconfig["method"],$code);
       $code = str_replace('<<instance>>',$jobconfig["instance"],$code);
       $code = str_replace('<<scheduleid>>',$scheduleid,$code);
+      $code = str_replace('<<name>>',$jobconfig["name"],$code);
       return $code;
     }
 
