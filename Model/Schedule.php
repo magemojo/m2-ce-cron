@@ -397,6 +397,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       #Force UTC
       date_default_timezone_set('UTC');
 
+      #Set transaction name for New Relic, if installed
+      if (extension_loaded ('newrelic')) {
+        newrelic_name_transaction ('magemojo_cron_service');
+      }
+
       print "Starting Service\n";
       #Loop until killed or heat death of the universe
       while (true) {
