@@ -322,6 +322,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $code = str_replace('<<method>>',$jobconfig["method"],$code);
       $code = str_replace('<<instance>>',$jobconfig["instance"],$code);
       $code = str_replace('<<scheduleid>>',$scheduleid,$code);
+      $code = str_replace('<<name>>',$jobconfig["name"],$code);
       return $code;
     }
 
@@ -395,6 +396,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
       #Force UTC
       date_default_timezone_set('UTC');
+
+      #Set transaction name for New Relic, if installed
+      if (extension_loaded ('newrelic')) {
+        newrelic_name_transaction ('magemojo_cron_service');
+      }
 
       print "Starting Service\n";
       #Loop until killed or heat death of the universe
