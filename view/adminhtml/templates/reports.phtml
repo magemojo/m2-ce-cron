@@ -2,7 +2,7 @@
 
 <?php
   date_default_timezone_set('UTC');
-  #Times are stored in UTC, converting to the locale timezone for report
+  /* Times are stored in UTC, converting to the locale timezone for report */
   $utc = date("Y-m-d h:i:s A");
   $timezone = $block->getLocalTimezone();
   date_default_timezone_set($timezone);
@@ -43,7 +43,7 @@
     }
     $jobs[$report["job_code"]][$report["status"]] = $report["count"];
   }
-  #print_r($jobs);
+  //print_r($jobs);
   foreach ($jobs as $job_code=>$job) {
     if ($job["executed_at"] == 'N/A') {
       $executed = $job["executed_at"];
@@ -52,7 +52,7 @@
       $executed = date("Y-m-d h:i:s A",($executed - $timediff));
       $runtime = strtotime($job["finished_at"]) - strtotime($job["executed_at"]);
     }
-    #print_r($job);
+    //print_r($job);
     print '<tr>';
     print '<td style="padding: 4px;">'.$job_code.'</td>';
     print '<td style="padding: 4px;">'.$job["running"].'</td>';
