@@ -186,7 +186,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function resetSchedule() {
       $connection = $this->getConnection();
-      $message = 'Parent Cron Process Terminated Abnomally';
+      $message = 'Parent Cron Process Terminated Abnormally';
       $connection->update($this->getTable('cron_schedule'),['status' => 'error', 'messages' => $message],['status = ?' => 'running']);
       $connection->update($this->getTable('cron_schedule'),['status' => 'missed'],['status = ?' => 'pending', 'scheduled_at < ?' => date('Y-m-d H:i:s',time())]);
     }
