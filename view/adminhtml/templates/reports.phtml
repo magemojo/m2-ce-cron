@@ -47,6 +47,7 @@
   foreach ($jobs as $job_code=>$job) {
     if ($job["executed_at"] == 'N/A') {
       $executed = $job["executed_at"];
+      $runtime = '';
     } else {
       $executed = strtotime($job["executed_at"]);
       $executed = date("Y-m-d h:i:s A",($executed - $timediff));
