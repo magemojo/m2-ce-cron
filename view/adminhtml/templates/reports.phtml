@@ -51,7 +51,7 @@
     } else {
       $executed = strtotime($job["executed_at"]);
       $executed = date("Y-m-d h:i:s A",($executed - $timediff));
-      $runtime = strtotime($job["finished_at"]) - strtotime($job["executed_at"]);
+      $runtime = strtotime($job["finished_at"]) - strtotime($job["executed_at"]) .'s';
     }
     //print_r($job);
     print '<tr>';
@@ -62,7 +62,7 @@
     print '<td style="padding: 4px;">'.$job["missed"].'</td>';
     print '<td style="padding: 4px;">'.$job["error"].'</td>';
     print '<td style="padding: 4px;">'.$executed.'</td>';
-    print '<td style="padding: 4px;">'.$runtime.'s</td>';
+    print '<td style="padding: 4px;">'.$runtime.'</td>';
     print '<td style="padding: 4px;"><a href="'.$block->getUrl("magemojocron/reports/execute",array("jobcode" => $job_code)).'">Execute</a></td>';
     print '</tr>';
   }
