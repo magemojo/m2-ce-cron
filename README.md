@@ -61,7 +61,7 @@ php bin/magento setup:static-content:deploy
 ```
 - Log into your admin and set your options under System -> Cron Settings
 
-- Enable cron jobs as defined if it is not already enabled here: http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
+- Enable cron jobs as defined if it is not already enabled here: https://devdocs.magento.com/guides/v2.3/config-guide/cli/config-cli-subcommands-cron.html
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
