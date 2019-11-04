@@ -13,6 +13,10 @@ use MageMojo\Cron\Model\ResourceModel\Schedule as ScheduleResource;
 use Magento\Framework\App\MaintenanceMode;
 use Magento\Framework\Model\AbstractModel;
 
+/**
+ * Class Schedule
+ * @package MageMojo\Cron\Model
+ */
 class Schedule extends AbstractModel
 {
     const VAR_FOLDER_PATH = BP . '/' . DirectoryList::VAR_DIR;
