@@ -1,4 +1,5 @@
 <?php
+
 namespace MageMojo\Cron\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
@@ -14,6 +15,9 @@ use Magento\Framework\Shell\ComplexParameter;
 
 /**
  * Command for executing cron jobs
+ *
+ * Class CronCommand
+ * @package MageMojo\Cron\Console\Command
  */
 class CronCommand extends Command
 {
@@ -28,14 +32,19 @@ class CronCommand extends Command
      * @var ObjectManagerFactory
      */
     private $objectManagerFactory;
+
+    /**
+     * @var Schedule\Proxy
+     */
     protected $schedule;
 
     /**
-     * Constructor
+     * CronCommand constructor.
      *
      * @param ObjectManagerFactory $objectManagerFactory
+     * @param Schedule\Proxy $schedule
      */
-    public function __construct(ObjectManagerFactory $objectManagerFactory, \MageMojo\Cron\Model\Schedule $schedule)
+    public function __construct(ObjectManagerFactory $objectManagerFactory, Schedule\Proxy $schedule)
     {
         $this->objectManagerFactory = $objectManagerFactory;
         $this->schedule = $schedule;
@@ -72,6 +81,6 @@ class CronCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-    	$this->schedule->execute();
+        $this->schedule->execute();
     }
 }

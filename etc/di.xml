@@ -4,7 +4,7 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="cronExecute" xsi:type="object">MageMojo\Cron\Console\Command\CronExecuteCommand</item>
+                <item name="cronExecute" xsi:type="object">MageMojo\Cron\Console\Command\CronExecuteCommand\Proxy</item>
             </argument>
         </arguments>
     </type>
