@@ -15,5 +15,19 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- Adding proxies for the console commands. These are loaded when setup:install is run
+         and they load other classes, causing a crash of the install process. -->
+    <type name="MageMojo\Cron\Console\Command\CronExecuteCommand">
+        <arguments>
+            <argument name="schedule" xsi:type="object">MageMojo\Cron\Model\Schedule\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="MageMojo\Cron\Console\Command\CronCommand">
+        <arguments>
+            <argument name="schedule" xsi:type="object">MageMojo\Cron\Model\Schedule\Proxy</argument>
+        </arguments>
+    </type>
 </config>
 
