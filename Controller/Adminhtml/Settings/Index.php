@@ -60,6 +60,12 @@ class Index extends \Magento\Backend\App\Action
 	        $fail = true;
 	        $this->messageManager->addError('History must be numeric');
 	      }
+	      if (is_numeric($this->getRequest()->getParam('consumers_timeout'))) {
+	        $this->resource->setConfigValue('magemojo/cron/consumers_timeout','default',0,$this->getRequest()->getParam('consumers_timeout'));
+	      } else {
+	        $fail = true;
+	        $this->messageManager->addError('Consumers Timeout must be numeric');
+	      }
 	      if (!$fail) {
 	        $this->messageManager->addSuccess('Cron Configuration Saved');
 	      }
