@@ -290,11 +290,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             #intercept the consumers_runner job and schedule it in a sane manner that doesn't cron bomb the system
             if ($job["consumers"]) {
               foreach ($this->consumerConfig->getConsumers() as $consumer) {
-                #if ($this->canConsumerBeRun($consumer, $allowedConsumers)) {
+                if ($this->canConsumerBeRun($consumer, $allowedConsumers)) {
                   $conjob = $job;
                   $conjob["name"] = "mm_consumer_".$consumer->getName();
                   $this->resource->saveSchedule($conjob,time(),$schedule);
-                #}
+                }
               }
             } else{
               $this->resource->saveSchedule($job,time(),$schedule);
