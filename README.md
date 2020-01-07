@@ -3,7 +3,7 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
-![Version 1.2.9](https://img.shields.io/badge/Version-1.2.9-green.svg)
+![Version 1.3.0](https://img.shields.io/badge/Version-1.3.0-green.svg)
 
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
@@ -16,6 +16,8 @@ The module removes the possibility of overlapping jobs by having a single source
 In addition to the service model many other enhancements have been made.  For example a re-write of left join on update statement that forced a full table scan on cron_schedule for history.  Statement would lock because it's reading from same table it was trying to update.
 
 In version 1.1 Cron Reporting was added to the admin to show job code statistics and list cron run errors.
+
+In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinate loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).

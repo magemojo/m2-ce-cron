@@ -6,6 +6,8 @@ use Magento\Framework\App\AreaList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\Filesystem\directoryList;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\MessageQueue\ConnectionTypeResolver;
+use Magento\Framework\MessageQueue\Consumer\Config\ConsumerConfigItemInterface;
 
 class Schedule extends \Magento\Framework\Model\AbstractModel
 {
@@ -17,6 +19,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $resource;
     private $maintenance;
     private $basedir;
+    private $consumers;
+    private $consumerConfig;
+    private $deploymentConfig;
+    private $mqConnectionTypeResolver;
     /**
      * @var \Magento\Framework\Filesystem\Driver\File
      */
@@ -35,13 +41,22 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         directoryList $directoryList,
         \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
         \Magento\Framework\App\MaintenanceMode $maintenance,
-        \Magento\Framework\Filesystem\Driver\File $file
+        \Magento\Framework\Filesystem\Driver\File $file,
+        \Magento\MessageQueue\Model\Cron\ConsumersRunner $consumers,
+        \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig,
+        \Magento\Framework\App\DeploymentConfig $deploymentConfig,
+        ConnectionTypeResolver $mqConnectionTypeResolver = null
     ) {
         $this->cronconfig = $cronconfig;
         $this->directoryList = $directoryList;
         $this->resource = $resource;
         $this->maintenance = $maintenance;
         $this->file = $file;
+        $this->consumers = $consumers;
+        $this->consumerConfig = $consumerConfig;
+        $this->deploymentConfig = $deploymentConfig;
+        $this->mqConnectionTypeResolver = $mqConnectionTypeResolver
+            ?: ObjectManager::getInstance()->get(ConnectionTypeResolver::class);
     }
 
     /**
@@ -69,6 +84,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           }
           $job["name"] = $name;
           $job["group"] = $groupname;
+          $job["consumers"] = false;
+          if ($job["name"] == "consumers_runner") {
+            $job["consumers"] = true;
+          }
           $jobs[$name] = $job;
         }
       }
@@ -247,6 +266,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      */
     public function createSchedule($from, $to) {
       $this->getConfig();
+      $allowedConsumers = $this->deploymentConfig->get('cron_consumers_runner/consumers', []);
       foreach($this->config as $job) {
         if (isset($job["schedule"])) {
           $schedule = array();
@@ -267,7 +287,18 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             }
           }
           if (count($schedule) > 0) {
-            $this->resource->saveSchedule($job,time(),$schedule);
+            #intercept the consumers_runner job and schedule it in a sane manner that doesn't cron bomb the system
+            if ($job["consumers"]) {
+              foreach ($this->consumerConfig->getConsumers() as $consumer) {
+                if ($this->canConsumerBeRun($consumer, $allowedConsumers)) {
+                  $conjob = $job;
+                  $conjob["name"] = "mm_consumer_".$consumer->getName();
+                  $this->resource->saveSchedule($conjob,time(),$schedule);
+                }
+              }
+            } else{
+              $this->resource->saveSchedule($job,time(),$schedule);
+            }
           }
         }
       }
@@ -308,7 +339,14 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return array
      */
     public function getJobConfig($jobname) {
-      return $this->config[$jobname];
+      #if a consumers job get default consumers runner config
+      if (strpos($jobname,"mm_consumer") > -1) {
+        $job = $this->config["consumers_runner"];
+        $job["name"] = $jobname;
+      } else {
+        $job = $this->config[$jobname];
+      }
+      return $job;
     }
 
     /**
@@ -439,15 +477,33 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
         #Get pending jobs
         $pending = $this->resource->getPendingJobs();
+        $maxConsumerMessages = (int) $this->deploymentConfig->get('cron_consumers_runner/max_messages', 10000);
+        $consumersTimeout =  $this->resource->getConfigValue('magemojo/cron/consumers_timeout',0,'default');
+        if (!$consumersTimeout) {
+          $consumersTimeout = 0;
+        }
         while (count($pending) && $this->canRunJobs($jobcount, $pending)) {
           $job = array_pop($pending);
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
-
-            $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
-            #change to base directory and run stub code to execute cron method asychronously, should return pid id
-            $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+            #if this is a consumers job use a different runtime cmd
+            if ($jobconfig["consumers"]) {
+              $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
+              $runtime = "bin/magento queue:consumers:start ".$consumerName;
+              if ($maxConsumerMessages) {
+                $runtime .= ' --max-messages=' . $maxConsumerMessages;
+              }
+              $runtime = $this->phpproc." ".$runtime;
+              if ($consumersTimeout != 0) {
+                $runtime = "timeout -s 9 ".$consumersTimeout." ".$runtime;
+              }
+              $cmd = 'cd '.$this->basedir.'; '.$runtime." &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+            } else {
+              $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
+              #change to base directory and run stub code to execute cron method asychronously, should return pid id
+              $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+            }
             $pid = exec($cmd);
 
             #If the output is not numeric then it errored due to syntax
@@ -581,4 +637,26 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->unsetPid('schedule.'.$id);
       }
     }
+
+    /**
+     *  Checks if a consumers job can be run
+     *
+     * @return bool
+     */
+    private function canConsumerBeRun(ConsumerConfigItemInterface $consumerConfig, array $allowedConsumers = []): bool {
+      $consumerName = $consumerConfig->getName();
+      if (!empty($allowedConsumers) && !in_array($consumerName, $allowedConsumers)) {
+        return false;
+      }
+
+      $connectionName = $consumerConfig->getConnection();
+      try {
+        $this->mqConnectionTypeResolver->getConnectionType($connectionName);
+      } catch (\LogicException $e) {
+        print sprintf('Consumer "%s" skipped as required connection "%s" is not configured. %s',$consumerName,$connectionName,$e->getMessage());
+        return false;
+      }
+      return true;
+    }
+
 }
