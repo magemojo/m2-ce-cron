@@ -544,8 +544,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $schedule = array('scheduled_at' => time());
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
 
-      $state = ObjectManager::getInstance()->get("Magento\Framework\App\State");
-      $state->setAreaCode("crontab");
+      try {
+       $state = ObjectManager::getInstance()->get("Magento\Framework\App\State");
+       $state->setAreaCode("crontab");
+      } catch (\Exception $exception) {
+       // handle exception
+      }
       $areaList = ObjectManager::getInstance()->get(AreaList::class);
       $areaList->getArea(Area::AREA_CRONTAB)->load(Area::PART_TRANSLATE);
 
