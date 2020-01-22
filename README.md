@@ -5,6 +5,8 @@
 
 ![Version 1.3.0](https://img.shields.io/badge/Version-1.3.0-green.svg)
 
+NOTICE: Version 1.3x is only supported for Magento 2.3 and above. Older Magento 2 version use module version 1.2
+
 The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
 This module replaces the cron management with a service that accepts jobs. As jobs are scheduled, they are picked up by this service for execution.  If a job is already running and another is picked up with the same job code, the new one is marked as missed.  Duplicate jobs are prevented from running, reducing server overhead.
@@ -54,8 +56,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Run these commands in your terminal:
 
+For Mageto Versions 2.3 and up
 ```bash
 composer require magemojo/m2-ce-cron
+```
+Otherwise
+```bash
+composer require magemojo/m2-ce-cron:1.2.9
+```
+
+```bash
 php bin/magento module:enable MageMojo_Cron
 php bin/magento setup:upgrade
 php bin/magento setup:di:compile
