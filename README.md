@@ -56,15 +56,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Run these commands in your terminal:
 
-For Mageto Versions 2.3 and up
+- For Mageto Versions 2.3 and up
 ```bash
 composer require magemojo/m2-ce-cron
 ```
-Otherwise
+- Otherwise
 ```bash
 composer require magemojo/m2-ce-cron:1.2.9
 ```
 
+- Then run the following
 ```bash
 php bin/magento module:enable MageMojo_Cron
 php bin/magento setup:upgrade
