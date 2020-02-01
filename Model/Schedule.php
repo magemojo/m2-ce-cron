@@ -19,7 +19,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $resource;
     private $maintenance;
     private $basedir;
-    private $consumers;
     private $consumerConfig;
     private $deploymentConfig;
     private $mqConnectionTypeResolver;
@@ -35,6 +34,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @param ResourceModel\Schedule $resource
      * @param \Magento\Framework\App\MaintenanceMode $maintenance
      * @param \Magento\Framework\Filesystem\Driver\File $file
+     * @param \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig
+     * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
+     * @param ConnectionTypeResolver|null $mqConnectionTypeResolver
      */
     public function __construct(
         \Magento\Cron\Model\Config $cronconfig,
@@ -42,7 +44,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         \MageMojo\Cron\Model\ResourceModel\Schedule $resource,
         \Magento\Framework\App\MaintenanceMode $maintenance,
         \Magento\Framework\Filesystem\Driver\File $file,
-        \Magento\MessageQueue\Model\Cron\ConsumersRunner $consumers,
         \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig,
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         ConnectionTypeResolver $mqConnectionTypeResolver = null
@@ -52,7 +53,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->resource = $resource;
         $this->maintenance = $maintenance;
         $this->file = $file;
-        $this->consumers = $consumers;
         $this->consumerConfig = $consumerConfig;
         $this->deploymentConfig = $deploymentConfig;
         $this->mqConnectionTypeResolver = $mqConnectionTypeResolver
