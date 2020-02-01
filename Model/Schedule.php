@@ -557,7 +557,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $instance->{$jobconfig["method"]}($schedule);
         $this->resource->setJobStatus($scheduled[0]["schedule_id"],'success',NULL);
       } catch (Exception $e) {
-        $this->resource->setJobStatus($job["schedule_id"],'error',$e->message);
+        $this->resource->setJobStatus($scheduled[0]["schedule_id"],'error',$e->getMessage());
       }
     }
 
