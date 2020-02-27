@@ -56,7 +56,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Run these commands in your terminal:
 
-- For Mageto Versions 2.3 and up
+- For Magento Versions 2.3 and up
 ```bash
 composer require magemojo/m2-ce-cron
 ```
