@@ -267,6 +267,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     public function createSchedule($from, $to) {
       $this->getConfig();
       $allowedConsumers = $this->deploymentConfig->get('cron_consumers_runner/consumers', []);
+      $runConsumersInCron = $this->deploymentConfig->get('cron_consumers_runner/cron_run', true);
       foreach($this->config as $job) {
         if (isset($job["schedule"])) {
           $schedule = array();
@@ -289,6 +290,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           if (count($schedule) > 0) {
             #intercept the consumers_runner job and schedule it in a sane manner that doesn't cron bomb the system
             if ($job["consumers"]) {
+              if(!$runConsumersInCron) {
+                  continue;
+              }
               foreach ($this->consumerConfig->getConsumers() as $consumer) {
                 if ($this->canConsumerBeRun($consumer, $allowedConsumers)) {
                   $conjob = $job;
