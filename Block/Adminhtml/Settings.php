@@ -56,7 +56,7 @@ class Settings extends \Magento\Framework\View\Element\Template
      */
     public function textfield($path, $name, $size, $max) {
       $value = $this->resourceconfig->getConfigValue($path, 'default', 0);
-      print '<input type="text" name="'.$name.'" size="'.$size.'" maxchar="'.$max.'" value="'.$value.'">';
+      print '<input type="text" name="'.$name.'" size="'.$size.'" maxchar="'.$max.'" value="'.htmlspecialchars($value).'">';
     }
 
 }
