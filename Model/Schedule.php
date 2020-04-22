@@ -14,7 +14,18 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     const VAR_FOLDER_PATH = BP . '/'. directoryList::VAR_DIR;
     const CRON_FOLDER_PATH = '/cron/schedule';
 
+    private $simultaniousJobs;
+    private $phpproc;
+    private $maxload;
+    private $history;
+    private $scheduleoverrides;
+    private $config;
+    private $cronenabled;
+    private $runningPids;
     private $cronconfig;
+    private $lastJobTime;
+    private $pendingjobs;
+    private $loadavgtest;
     private $directoryList;
     private $resource;
     private $maintenance;
@@ -477,8 +488,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
         #Get pending jobs
         $pending = $this->resource->getPendingJobs();
-        $maxConsumerMessages = (int) $this->deploymentConfig->get('cron_consumers_runner/max_messages', 10000);
-        $consumersTimeout =  $this->resource->getConfigValue('magemojo/cron/consumers_timeout',0,'default');
+        $maxConsumerMessages = intval($this->deploymentConfig->get('cron_consumers_runner/max_messages', 10000));
+        $consumersTimeout =  intval($this->resource->getConfigValue('magemojo/cron/consumers_timeout',0,'default'));
         if (!$consumersTimeout) {
           $consumersTimeout = 0;
         }
@@ -490,21 +501,25 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             #if this is a consumers job use a different runtime cmd
             if ($jobconfig["consumers"]) {
               $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
-              $runtime = "bin/magento queue:consumers:start ".$consumerName;
+              $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
               if ($maxConsumerMessages) {
                 $runtime .= ' --max-messages=' . $maxConsumerMessages;
               }
-              $runtime = $this->phpproc." ".$runtime;
+              $runtime = escapeshellcmd($this->phpproc)." ".$runtime;
               if ($consumersTimeout != 0) {
                 $runtime = "timeout -s 9 ".$consumersTimeout." ".$runtime;
               }
-              $cmd = 'cd '.$this->basedir.'; '.$runtime." &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+              $cmd = $runtime;
             } else {
               $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
-              #change to base directory and run stub code to execute cron method asychronously, should return pid id
-              $cmd = 'cd '.$this->basedir.'; '.$this->phpproc." -r '".$runtime."' &> ".$this->basedir."/var/cron/schedule.".$job["schedule_id"]." & echo $!";
+              $cmd = escapeshellcmd($this->phpproc)." -r ".escapeshellarg($runtime);
             }
-            $pid = exec($cmd);
+            $exec = sprintf("%s; %s &> %s & echo $!",
+              'cd ' . escapeshellarg($this->basedir),
+              $cmd,
+              escapeshellarg($this->basedir . "/var/cron/schedule." . $job["schedule_id"])
+            );
+            $pid = exec($exec);
 
             #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
