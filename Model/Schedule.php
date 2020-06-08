@@ -81,7 +81,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       foreach($this->cronconfig->getJobs() as $groupname=>$group) {
         $override =  $this->resource->getConfigValue('system/cron/'.$groupname.'/schedule_generate_every',0,'default');
         if ($override) {
-          $scheduleoverrides[$groupname] = $override;
+          $scheduleoverrides[$groupname] = '*/'.$override;
         }
         foreach($group as $name=>$job) {
           if (!is_array($job)) continue;
