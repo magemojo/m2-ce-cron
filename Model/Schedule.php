@@ -351,15 +351,17 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     /**
      * Get an individual configuration for a job_code
      *
-     * @return array
+     * @return array|false
      */
     public function getJobConfig($jobname) {
       #if a consumers job get default consumers runner config
       if (strpos($jobname,"mm_consumer") > -1) {
         $job = $this->config["consumers_runner"];
         $job["name"] = $jobname;
-      } else {
+      } elseif (isset($this->config[$jobname])) {
         $job = $this->config[$jobname];
+      } else {
+          $job = false;
       }
       return $job;
     }
@@ -370,12 +372,15 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return string
      */
     public function prepareStub($jobconfig, $stub, $scheduleid) {
+      if (!isset($jobconfig["instance"]) || !class_exists($jobconfig["instance"]) || !isset($jobconfig["method"])) {
+        return false;
+      }
       $code = trim($stub);
       $code = str_replace('<<basedir>>',$this->basedir,$code);
       $code = str_replace('<<method>>',$jobconfig["method"],$code);
       $code = str_replace('<<instance>>',$jobconfig["instance"],$code);
       $code = str_replace('<<scheduleid>>',$scheduleid,$code);
-      $code = str_replace('<<name>>',$jobconfig["name"],$code);
+      $code = str_replace('<<name>>',$jobconfig["name"]??'',$code);
       return $code;
     }
 
@@ -502,8 +507,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
+            if ($jobconfig == false) {
+                continue;
+            }
             #if this is a consumers job use a different runtime cmd
-            if ($jobconfig["consumers"]) {
+            if (isset($jobconfig["consumers"])) {
               $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
               $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
               if ($maxConsumerMessages) {
@@ -516,7 +524,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
               $cmd = $runtime;
             } else {
               $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
-              $cmd = escapeshellcmd($this->phpproc)." -r ".escapeshellarg($runtime);
+              if ($runtime) {
+                  $cmd = escapeshellcmd($this->phpproc) . " -r " . escapeshellarg($runtime);
+              }
             }
             $exec = sprintf("%s; %s &> %s & echo $!",
               'cd ' . escapeshellarg($this->basedir),
@@ -558,7 +568,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
       $this->getConfig();
       $jobconfig = $this->getJobConfig($jobname);
-
+      if ($jobconfig === false ) {
+          return;
+      }
       #create a schedule
       $schedule = array('scheduled_at' => time());
       $scheduled = $this->resource->saveSchedule($jobconfig, time(), $schedule);
