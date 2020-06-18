@@ -511,7 +511,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
                 continue;
             }
             #if this is a consumers job use a different runtime cmd
-            if (isset($jobconfig["consumers"])) {
+            if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
               $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
               $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
               if ($maxConsumerMessages) {
