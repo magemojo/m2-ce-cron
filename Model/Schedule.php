@@ -372,7 +372,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return string
      */
     public function prepareStub($jobconfig, $stub, $scheduleid) {
-      if (!isset($jobconfig["instance"]) || !class_exists($jobconfig["instance"]) || !isset($jobconfig["method"])) {
+      if (!isset($jobconfig["instance"]) || !isset($jobconfig["method"])) {
         return false;
       }
       $code = trim($stub);
@@ -526,6 +526,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
               $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
               if ($runtime) {
                   $cmd = escapeshellcmd($this->phpproc) . " -r " . escapeshellarg($runtime);
+              } else {
+                  $this->setJobStatus($job["schedule_id"],'error','Incorrect config of cron job');
+                  continue;
               }
             }
             $exec = sprintf("%s; %s &> %s & echo $!",
