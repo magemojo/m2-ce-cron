@@ -29,5 +29,17 @@
             <argument name="schedule" xsi:type="object">MageMojo\Cron\Model\Schedule\Proxy</argument>
         </arguments>
     </type>
+
+    <virtualType name="MageMojoCronConfig" type="Magento\Cron\Model\Config">
+        <arguments>
+            <argument name="configData" xsi:type="object">\MageMojo\Cron\Model\Config\Data</argument>
+        </arguments>
+    </virtualType>
+    <type name="MageMojo\Cron\Model\Schedule">
+        <arguments>
+            <argument name="cronconfig" xsi:type="object">MageMojoCronConfig</argument>
+        </arguments>
+    </type>
+
 </config>
 
