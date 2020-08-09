@@ -32,7 +32,7 @@
 
     <virtualType name="MageMojoCronConfig" type="Magento\Cron\Model\Config">
         <arguments>
-            <argument name="configData" xsi:type="object">\MageMojo\Cron\Model\Config\Data</argument>
+            <argument name="configData" xsi:type="object">MageMojo\Cron\Model\Config\Data</argument>
         </arguments>
     </virtualType>
     <type name="MageMojo\Cron\Model\Schedule">

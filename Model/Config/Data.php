@@ -13,6 +13,7 @@ use Magento\Framework\Config\CacheInterface;
 class Data extends \Magento\Cron\Model\Config\Data
 {
     protected $_dbReader;
+    protected $_reader;
 
     /**
      * Constructor
@@ -27,7 +28,8 @@ class Data extends \Magento\Cron\Model\Config\Data
         DbReader $dbReader
     ) {
         $this->_dbReader = $dbReader;
-        parent::__construct($reader, $cache, $dbReader);
+        $this->_reader = $reader;
+        parent::__construct($reader, $cache,$dbReader);
         $this->merge($dbReader->get());
     }
 
