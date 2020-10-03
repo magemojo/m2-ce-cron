@@ -262,7 +262,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
         $i = explode('-',$e);
         if (count($i) == 2) {
-          if (($value > $i[0]) and ($value < $i[1])) {
+          if (($value >= $i[0]) and ($value <= $i[1])) {
             return true;
           }
         }
