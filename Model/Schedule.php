@@ -128,7 +128,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->loadavgtest = true;
       if (!is_readable('/proc/cpuinfo')) {
         $this->loadavgtest = false;
-        print 'Unable to test loadaverage disabling loadaverage checking';
+        $this->printWarn('Unable to test loadaverage disabling loadaverage checking');
       }
     }
 
@@ -336,7 +336,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     public function execute() {
       $this->basedir = $this->directoryList->getRoot();
       $this->checkCronFolderExistence();
-      print "Healthchecking Cron Service\n";
+      $this->printInfo('Healthchecking Cron Service');
       $pid = $this->checkPid('cron.pid');
       if (!$this->checkProcess($pid) or (!$pid)) {
         $this->initialize();
@@ -396,7 +396,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $cpunum = 1;
         }
         if ((sys_getloadavg()[0] / $cpunum) > $this->maxload) {
-          print "Crons suspended due to high load average: ".(sys_getloadavg()[0] / $cpunum)."\n";
+          $this->printWarn("Crons suspended due to high load average: ".(sys_getloadavg()[0] / $cpunum));
           return false;
         }
       }
@@ -404,8 +404,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       /* Suspend crons in maintenance mode if no internal testing IPs are present */
       $maint = $this->maintenance->isOn() && empty($exempt);
       if ($maint) {
-         print "Crons suspended due to maintenance mode being enabled \n";
-         return false;
+        $this->printWarn("Crons suspended due to maintenance mode being enabled");
+        return false;
       }
       if ($jobcount > $this->simultaniousJobs) {
         return false;
@@ -460,17 +460,18 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         newrelic_name_transaction ('magemojo_cron_service');
       }
 
-      print "Starting Service\n";
+      $this->printInfo("Starting Cron Service");
       #Loop until killed or heat death of the universe
       while (true) {
         $this->getRuntimeParameters();
         if ($this->cronenabled == 0) {
+          $this->printWarn("Stopped Cron Service by maintenance is enabled");
           exit;
         }
 
         #Checking if new jobs need to be scheduled
         if ($this->lastJobTime < time()) {
-          print "Creating schedule\n";
+          $this->printInfo("Creating schedule");
           $this->createSchedule($this->lastJobTime, $this->lastJobTime + 3600);
           $this->lastJobTime = $this->resource->getLastJobTime();
           $this->pendingjobs = $this->resource->getAllPendingJobs();
@@ -620,7 +621,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
       $diff = array_diff($schedules,$running);
       foreach ($diff as $scheduleid) {
-        print "Found mismatched job status for schedule_id ".$scheduleid."\n";
+        $this->printInfo("Found mismatched job status for schedule_id ".$scheduleid);
         $this->resource->setJobStatus($scheduleid, 'error', 'Missing PID for process');
       }
       $diff = array_diff($running,$schedules);
@@ -630,7 +631,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
 
         $pid = $pids["scheduleid"];
-        print "Found orphaned pid file for schedule_id ".$scheduleid."\n";
+        $this->printInfo("Found orphaned pid file for schedule_id ".$scheduleid);
         $this->unsetPid('cron.'.$pid);
       }
 
@@ -676,6 +677,37 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
+     * print info log
+     *
+     * @param string $msg
+     * @return void
+     */
+    private function printInfo($msg = '') {
+      $time = date('Y-m-d H:i:s', time());
+      print "[$time] INFO $msg" . PHP_EOL;
+    }
+    /**
+     * print warn log
+     *
+     * @param string $msg
+     * @return void
+     */
+    private function printWarn($msg = '') {
+      $time = date('Y-m-d H:i:s', time());
+      print "[$time] WARN $msg" . PHP_EOL;
+    }
+    /**
+     * print error log
+     *
+     * @param string $msg
+     * @return void
+     */
+    private function printError($msg = '') {
+      $time = date('Y-m-d H:i:s', time());
+      print "[$time] ERR $msg" . PHP_EOL;
+    }
+  
+    /**
      *  Checks if a consumers job can be run
      *
      * @return bool
@@ -690,7 +722,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       try {
         $this->mqConnectionTypeResolver->getConnectionType($connectionName);
       } catch (\LogicException $e) {
-        print sprintf('Consumer "%s" skipped as required connection "%s" is not configured. %s',$consumerName,$connectionName,$e->getMessage());
+        $this->printInfo(sprintf('Consumer "%s" skipped as required connection "%s" is not configured. %s',$consumerName,$connectionName,$e->getMessage()));
         return false;
       }
       return true;
