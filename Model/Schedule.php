@@ -400,10 +400,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           return false;
         }
       }
-      $exempt = $this->maintenance->getAddressInfo();
-      /* Suspend crons in maintenance mode if no internal testing IPs are present */
-      $maint = $this->maintenance->isOn() && empty($exempt);
-      if ($maint) {
+      if ($this->isMaintenanceEnabled()) {
          print "Crons suspended due to maintenance mode being enabled \n";
          return false;
       }
@@ -411,6 +408,21 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         return false;
       }
       return true;
+    }
+
+    /**
+     * check if maintenance is currently on
+     * @return bool
+     */
+    public function isMaintenanceEnabled()
+    {
+        $exempt = $this->maintenance->getAddressInfo();
+        /* Suspend crons in maintenance mode if no internal testing IPs are present */
+        $maint = $this->maintenance->isOn() && empty($exempt);
+        if ($maint) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -464,7 +476,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       #Loop until killed or heat death of the universe
       while (true) {
         $this->getRuntimeParameters();
-        if ($this->cronenabled == 0) {
+        if ($this->cronenabled == 0 || $this->isMaintenanceEnabled()) {
           exit;
         }
 
