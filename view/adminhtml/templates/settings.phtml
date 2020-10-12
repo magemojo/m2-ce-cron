@@ -48,6 +48,10 @@
           <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Consumers Job Timeout:</b></span></label></td>
           <td class="value" align="left"><?php $block->textfield('magemojo/cron/consumers_timeout','consumers_timeout',4,4); ?></td>
         </tr>
+        <tr id="row_general_country_default">
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Exporters Job Timeout:</b></span></label></td>
+          <td class="value" align="left"><?php $block->textfield('magemojo/cron/exporters_timeout','exporters_timeout',4,4); ?></td>
+        </tr>
         <tr>
         <td colspan="2" style="padding-bottom: 10px;">The number of seconds to allow a consumers job to run. These jobs can infinitely run under some conditions.</td>
         </tr>
