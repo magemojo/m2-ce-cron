@@ -18,7 +18,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $phpproc;
     private $maxload;
     private $history;
-    private $scheduleoverrides;
     private $config;
     private $cronenabled;
     private $runningPids;
@@ -32,7 +31,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $basedir;
     private $consumerConfig;
     private $deploymentConfig;
+    private $scopeConfig;
     private $mqConnectionTypeResolver;
+
     /**
      * @var \Magento\Framework\Filesystem\Driver\File
      */
@@ -47,6 +48,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @param \Magento\Framework\Filesystem\Driver\File $file
      * @param \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param ConnectionTypeResolver|null $mqConnectionTypeResolver
      */
     public function __construct(
@@ -57,6 +59,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\Filesystem\Driver\File $file,
         \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig,
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         ConnectionTypeResolver $mqConnectionTypeResolver = null
     ) {
         $this->cronconfig = $cronconfig;
@@ -66,6 +69,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->file = $file;
         $this->consumerConfig = $consumerConfig;
         $this->deploymentConfig = $deploymentConfig;
+        $this->scopeConfig = $scopeConfig;
         $this->mqConnectionTypeResolver = $mqConnectionTypeResolver
             ?: ObjectManager::getInstance()->get(ConnectionTypeResolver::class);
     }
@@ -77,17 +81,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      */
     public function getConfig() {
       $jobs = array();
-      $scheduleoverrides = array();
       foreach($this->cronconfig->getJobs() as $groupname=>$group) {
-        $override =  $this->resource->getConfigValue('system/cron/'.$groupname.'/schedule_generate_every',0,'default');
-        if ($override) {
-          $scheduleoverrides[$groupname] = '*/'.$override;
-        }
         foreach($group as $name=>$job) {
           if (!is_array($job)) continue;
           if (!isset($job["schedule"])) {
             if (isset($job["config_path"])) {
-              $schedule =  $this->resource->getConfigValue($job["config_path"],0,'default');
+              $schedule =  $this->scopeConfig->getValue($job["config_path"]);
               if ($schedule) {
                 $job["schedule"] = $schedule;
               }
@@ -102,7 +101,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $jobs[$name] = $job;
         }
       }
-      $this->scheduleoverrides = $scheduleoverrides;
       $this->config = $jobs;
     }
 
@@ -283,10 +281,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         if (isset($job["schedule"])) {
           $schedule = array();
           $expr = explode(' ',$job["schedule"]);
-          #check if the generate schedule override is set and change the minute expression accordingly
-          if (isset($this->scheduleoverrides[$job["group"]])) {
-            $expr[0] = $this->scheduleoverrides[$job["group"]];
-          }
           $buildtime = (floor($from/60)*60);
           while ($buildtime < $to) {
             $buildtime = $buildtime + 60;
@@ -531,10 +525,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
                   continue;
               }
             }
-            $exec = sprintf("%s; %s &> %s & echo $!",
+            $exec = sprintf("%s; %s > %s 2>&1 & echo $!",
               'cd ' . escapeshellarg($this->basedir),
               $cmd,
-              escapeshellarg($this->basedir . "/var/cron/schedule." . $job["schedule_id"])
+                escapeshellarg($this->basedir . "/var/cron/schedule." . $job["schedule_id"])
             );
             $pid = exec($exec);
 
