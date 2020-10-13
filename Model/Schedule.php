@@ -494,8 +494,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $pending = $this->resource->getPendingJobs();
         $maxConsumerMessages = intval($this->deploymentConfig->get('cron_consumers_runner/max_messages', 10000));
         $consumersTimeout =  intval($this->resource->getConfigValue('magemojo/cron/consumers_timeout',0,'default'));
+        $exportersTimeout =  intval($this->resource->getConfigValue('magemojo/cron/exporters_timeout',0,'default'));
         if (!$consumersTimeout) {
           $consumersTimeout = 0;
+        }
+        if (!$exportersTimeout) {
+          $exportersTimeout = 0;
         }
         while (count($pending) && $this->canRunJobs($jobcount, $pending)) {
           $job = array_pop($pending);
@@ -513,7 +517,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
                 $runtime .= ' --max-messages=' . $maxConsumerMessages;
               }
               $runtime = escapeshellcmd($this->phpproc)." ".$runtime;
-              if ($consumersTimeout != 0) {
+              if ($consumerName == 'exportProcessor') {
+                if ($exportersTimeout != 0) {
+                  $runtime = "timeout -s 9 " . $exportersTimeout . " " . $runtime;
+                }
+              } elseif ($consumersTimeout != 0) {
                 $runtime = "timeout -s 9 ".$consumersTimeout." ".$runtime;
               }
               $cmd = $runtime;
