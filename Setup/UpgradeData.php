@@ -11,10 +11,8 @@ class UpgradeData implements UpgradeDataInterface
 
 	public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
 	{
+	    $connection = $setup->getConnection();
         if (version_compare($context->getVersion(), '1.3.0', '<')) {
-            $connection = $setup->getConnection();
-
-
             $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/consumers_timeout');
             $result = $connection->fetchAll($select);
 
@@ -26,6 +24,7 @@ class UpgradeData implements UpgradeDataInterface
             }
         }
         if (version_compare($context->getVersion(), '1.3.6', '<')) {
+
             $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/exporters_timeout');
             $result = $connection->fetchAll($select);
 
@@ -35,7 +34,15 @@ class UpgradeData implements UpgradeDataInterface
                 array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/exporters_timeout', 'value' => '3600'));
                 $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
             }
+            $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/consumersgovenor');
+            $result = $connection->fetchAll($select);
 
+            #Create core_config_data settings
+            if (count($result) == 0) {
+                $insertData = array();
+                array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/consumersgovenor', 'value' => '1'));
+                $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
+            }
         }
 	}
 }

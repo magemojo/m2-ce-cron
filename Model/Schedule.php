@@ -149,7 +149,6 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function setPid($file,$scheduleid) {
-      #print 'file='.$file;
       file_put_contents(self::VAR_FOLDER_PATH.'/cron/'.$file,$scheduleid);
     }
 
@@ -202,10 +201,18 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      *
      * @return string
      */
-    public function getJobOutput($scheduleid) {
+    public function getJobOutput($scheduleid,$tail=False) {
       $file = self::VAR_FOLDER_PATH.self::CRON_FOLDER_PATH.".{$scheduleid}";
-      if (file_exists($file)){
-        return trim(file_get_contents($file));
+      if ($tail) {
+        if (file_exists($file)){
+          $handler = fopen($file,"r");
+          fseek($handler, -2000, SEEK_END);
+          return fread($handler,2000);
+        }
+      } else {
+        if (file_exists($file)){
+          return trim(file_get_contents($file));
+        }
       }
       return NULL;
     }
@@ -216,6 +223,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function cleanupProcesses() {
+      $this->printInfo('Running Process Cleanup');
       $running = array();
       $pids =  $this->getRunningPids();
       foreach ($pids as $pid=>$scheduleid) {
@@ -227,7 +235,22 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
       }
       $this->runningPids = $running;
+      if ($this->govenor) {
+        $this->consumersCleanup();
+      }
     }
+
+    public function consumersCleanup() {
+      $this->printInfo('Running Consumers Cleanup');
+      while ($pgrep = exec('pgrep -x strace')) {
+        $pids = explode("\n",$pgrep);
+        foreach ($pids as $pid) {
+          $childpid = $this->getChildProcess($pid);
+          $this->consumersTerminate($pid);
+        }
+      }
+    }
+
 
     /**
      * Set runtime parameters
@@ -240,6 +263,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->maxload = $this->resource->getConfigValue('magemojo/cron/maxload',0,'default');
       $this->history = $this->resource->getConfigValue('magemojo/cron/history',0,'default');
       $this->cronenabled = $this->resource->getConfigValue('magemojo/cron/enabled',0,'default');
+      $this->govenor = $this->resource->getConfigValue('magemojo/cron/consumersgovenor',0,'default');
     }
 
     /**
@@ -438,6 +462,18 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
+     * Set a job by schedule id
+     *
+     * @return array
+     */
+    function getJob($scheduleid) {
+      if (in_array($scheduleid,$this->pendingjobs)) {
+        return $this->pendingjobs[$scheduleid];
+      }
+      return NULL;
+    }
+
+    /**
      * Service loop for running crons
      *
      * @return void
@@ -475,8 +511,24 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $running = $this->getRunningPids();
         $jobcount = 0;
         foreach ($running as $pid=>$scheduleid) {
+
+          if ($this->govenor) {
+            $job = $this->getJob($scheduleid);
+            $jobconfig = $this->getJobConfig($job["job_code"]);
+            if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+               #run the consumers governor
+               $this->consumersGovenor($pid,$scheduleid);
+            }
+          }
+
           if (!$this->checkProcess($pid)) {
-            $output = $this->getJobOutput($scheduleid);
+            #IF this is a consumers job it was run under strace and we do not want this output
+            if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+              $output = '';
+            } else {
+              $output = $this->getJobOutput($scheduleid);
+            }
+
             #If output had "error" in the text, assume it errored
             if (strpos(strtolower($output),'error') > 0) {
               $this->setJobStatus($scheduleid,'error',$output);
@@ -525,6 +577,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
                 $runtime = "timeout -s 9 ".$consumersTimeout." ".$runtime;
               }
               $cmd = $runtime;
+              if ($this->govenor) {
+                $cmd = 'strace '.$cmd;
+              }
             } else {
               $runtime = $this->prepareStub($jobconfig,$stub,$job["schedule_id"]);
               if ($runtime) {
@@ -537,7 +592,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             $exec = sprintf("%s; %s > %s 2>&1 & echo $!",
               'cd ' . escapeshellarg($this->basedir),
               $cmd,
-                escapeshellarg($this->basedir . "/var/cron/schedule." . $job["schedule_id"])
+              escapeshellarg($this->basedir . "/var/cron/schedule." . $job["schedule_id"])
             );
             $pid = exec($exec);
 
@@ -567,6 +622,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
     }
 
+    /**
+     * Execute a cron from CLI
+     *
+     * @return void
+     */
     public function executeImmediate($jobname) {
       #Force UTC
       date_default_timezone_set('UTC');
@@ -601,6 +661,63 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
     }
 
+
+    /**
+     * Check for consumers processes in infinate loop states and terminate them
+     *
+     * @return void
+     */
+    public function consumersGovenor($pid,$scheduleid) {
+        $tail = $this->getJobOutput($scheduleid,True);
+        #Check for repeating strings indicating an infinately looping processes
+        $checks = array(
+          $this->consumersCheck($tail,'SELECT `queue_message`.`top"',1),
+          $this->consumersCheck($tail,'rt_sigsuspend([]',0)
+        );
+            if (in_array(True,$checks)) {
+            $this->consumersTerminate($pid);
+        }
+    }
+
+    /**
+    * Check for consumers processes in infinate loop states and terminate them
+    *
+    * @return bool
+    */
+    public function consumersCheck($log,$loopstring,$instances) {
+        if (substr_count($log,$loopstring) > $instances) {
+            return True;
+        }
+        return False;
+    }
+
+    /**
+    * Terminate a consumers process
+    *
+    * @return void
+    */
+    public function consumersTerminate($pid) {
+        $childpid = $this->getChildProcess($pid);
+        if ($this->checkProcess($pid)) {
+          exec("kill -9 $childpid");
+        }
+    }
+
+    /**
+    * Gets the child process of a running cron
+    *
+    * @return int
+    */
+    public function getChildProcess($pid) {
+      $childpid = exec('pgrep -P '.$pid);
+      if ($childpid) {
+        #Recursive call to get the final php process
+        $childpid = $this->getChildProcess($childpid);
+        return $childpid;
+      } else {
+        return $pid;
+      }
+    }
 
     /**
      * Check for processes that have gone insane and handle the errors
@@ -708,7 +825,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $time = date('Y-m-d H:i:s', time());
       print "[$time] ERR $msg" . PHP_EOL;
     }
-  
+
     /**
      *  Checks if a consumers job can be run
      *

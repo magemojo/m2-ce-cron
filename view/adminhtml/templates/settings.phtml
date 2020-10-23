@@ -55,6 +55,13 @@
         <tr>
         <td colspan="2" style="padding-bottom: 10px;">The number of seconds to allow a consumers job to run. These jobs can infinitely run under some conditions.</td>
         </tr>
+        <tr id="row_general_country_default">
+          <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Consumers Govenor:</b></span></label></td>
+          <td class="value" align="left"><?php $block->checkbox('magemojo/cron/consumersgovenor','consumersgovenor'); ?></td>
+        </tr>
+        <tr>
+        <td colspan="2" style="padding-bottom: 10px;">Many bugs in consumers processes cause them to run infinately. The consumers govenor will detect these states and terminate the processes.</td>
+        </tr>
       </table>
     </div>
   </div>
