@@ -467,10 +467,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return array
      */
     function getJob($scheduleid) {
-      if (in_array($scheduleid,$this->pendingjobs)) {
-        return $this->pendingjobs[$scheduleid];
-      }
-      return NULL;
+      return $this->pendingjobs[$scheduleid];
     }
 
     /**
