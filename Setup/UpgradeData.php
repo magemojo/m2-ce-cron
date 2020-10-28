@@ -34,13 +34,13 @@ class UpgradeData implements UpgradeDataInterface
                 array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/exporters_timeout', 'value' => '3600'));
                 $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
             }
-            $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/consumersgovenor');
+            $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/consumersgovernor');
             $result = $connection->fetchAll($select);
 
             #Create core_config_data settings
             if (count($result) == 0) {
                 $insertData = array();
-                array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/consumersgovenor', 'value' => '1'));
+                array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/consumersgovernor', 'value' => '1'));
                 $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
             }
         }

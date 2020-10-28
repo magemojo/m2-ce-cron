@@ -21,7 +21,7 @@ In version 1.1 Cron Reporting was added to the admin to show job code statistics
 
 In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinate loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
 
-In version 1.3.7 the consumers govenor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
+In version 1.3.7 the consumers governor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).

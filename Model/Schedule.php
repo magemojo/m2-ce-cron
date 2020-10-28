@@ -235,7 +235,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         }
       }
       $this->runningPids = $running;
-      if ($this->govenor) {
+      if ($this->governor) {
         $this->consumersCleanup();
       }
     }
@@ -263,7 +263,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->maxload = $this->resource->getConfigValue('magemojo/cron/maxload',0,'default');
       $this->history = $this->resource->getConfigValue('magemojo/cron/history',0,'default');
       $this->cronenabled = $this->resource->getConfigValue('magemojo/cron/enabled',0,'default');
-      $this->govenor = $this->resource->getConfigValue('magemojo/cron/consumersgovenor',0,'default');
+      $this->governor = $this->resource->getConfigValue('magemojo/cron/consumersgovernor',0,'default');
     }
 
     /**
@@ -509,7 +509,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $jobcount = 0;
         foreach ($running as $pid=>$scheduleid) {
 
-          if ($this->govenor) {
+          if ($this->governor) {
             $job = $this->getJob($scheduleid);
             $jobconfig = $this->getJobConfig($job["job_code"]);
             if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
@@ -574,7 +574,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
                 $runtime = "timeout -s 9 ".$consumersTimeout." ".$runtime;
               }
               $cmd = $runtime;
-              if ($this->govenor) {
+              if ($this->governor) {
                 $cmd = 'strace '.$cmd;
               }
             } else {
