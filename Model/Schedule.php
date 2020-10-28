@@ -115,18 +115,22 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
       $this->getConfig();
       $this->getRuntimeParameters();
-      $this->cleanupProcesses();
-      $this->lastJobTime = $this->resource->getLastJobTime();
-      if ($this->lastJobTime < time() - 360) {
-        $this->lastJobTime = time();
-      }
-      $pid = getmypid();
-      $this->setPid('cron.pid',$pid);
-      $this->pendingjobs = $this->resource->getAllPendingJobs();
-      $this->loadavgtest = true;
-      if (!is_readable('/proc/cpuinfo')) {
-        $this->loadavgtest = false;
-        $this->printWarn('Unable to test loadaverage disabling loadaverage checking');
+      if (!$this->cronenabled) {
+        $this->printWarn('Cron is disabled');
+      } else {
+        $this->cleanupProcesses();
+        $this->lastJobTime = $this->resource->getLastJobTime();
+        if ($this->lastJobTime < time() - 360) {
+          $this->lastJobTime = time();
+        }
+        $pid = getmypid();
+        $this->setPid('cron.pid',$pid);
+        $this->pendingjobs = $this->resource->getAllPendingJobs();
+        $this->loadavgtest = true;
+        if (!is_readable('/proc/cpuinfo')) {
+          $this->loadavgtest = false;
+          $this->printWarn('Unable to test loadaverage disabling loadaverage checking');
+        }
       }
     }
 
