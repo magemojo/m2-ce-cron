@@ -502,7 +502,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
           $exportersTimeout = 0;
         }
         while (count($pending) && $this->canRunJobs($jobcount, $pending)) {
-          $job = array_pop($pending);
+          $job = array_shift($pending);
           $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
           if (count($runcheck) == 0) {
             $jobconfig = $this->getJobConfig($job["job_code"]);
