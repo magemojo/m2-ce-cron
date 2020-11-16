@@ -72,6 +72,11 @@ class Index extends \Magento\Backend\App\Action
             $fail = true;
             $this->messageManager->addError('Exporters Timeout must be numeric');
           }
+	      if ($this->getRequest()->getParam('consumersgovernor')) {
+	        $this->resource->setConfigValue('magemojo/cron/consumersgovernor','default',0,1);
+	      } else {
+	        $this->resource->setConfigValue('magemojo/cron/consumersgovernor','default',0,0);
+	      }
 	      if (!$fail) {
 	        $this->messageManager->addSuccess('Cron Configuration Saved');
 	      }
