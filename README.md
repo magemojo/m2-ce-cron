@@ -7,7 +7,7 @@
 
 NOTICE: Version 1.3x is only supported for Magento 2.3 and above. Older Magento 2 version use module version 1.2
 
-The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
+The default cron can overlap and fill the cron_schedule table, which can cause exponentially more jobs to run on each cron interval, until finally the crons run continuously and never complete.  The high number of cron jobs can also crash servers hosting Magento 2. 
 
 This module replaces the cron management with a service that accepts jobs. As jobs are scheduled, they are picked up by this service for execution.  If a job is already running and another is picked up with the same job code, the new one is marked as missed.  Duplicate jobs are prevented from running, reducing server overhead.
 
@@ -19,7 +19,7 @@ In addition to the service model many other enhancements have been made.  For ex
 
 In version 1.1 Cron Reporting was added to the admin to show job code statistics and list cron run errors.
 
-In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinate loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
+In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinite loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
 
 In version 1.3.7 the consumers governor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
 
@@ -34,7 +34,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 * Prevents cron history records from exploding.
 
-* Stops cron processes from overruning each other.
+* Stops cron processes from overrunning each other.
 
 * Stops the cron from running while system is under configurable load conditions.
 
