@@ -471,7 +471,10 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return array
      */
     function getJob($scheduleid) {
-      return $this->pendingjobs[$scheduleid];
+      if (isset($this->pendingjobs[$scheduleid])) {
+        return $this->pendingjobs[$scheduleid];
+      }
+      return NULL;
     }
 
     /**
@@ -515,10 +518,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
           if ($this->governor) {
             $job = $this->getJob($scheduleid);
-            $jobconfig = $this->getJobConfig($job["job_code"]);
-            if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
-               #run the consumers governor
-               $this->consumersGovenor($pid,$scheduleid);
+            if ($job) {
+                $jobconfig = $this->getJobConfig($job["job_code"]);
+                if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+                    #run the consumers governor
+                    $this->consumersGovenor($pid, $scheduleid);
+                }
             }
           }
 
