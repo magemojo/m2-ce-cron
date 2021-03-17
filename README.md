@@ -3,7 +3,7 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
-![Version 1.3.7](https://img.shields.io/badge/Version-1.3.7-green.svg)
+![Version 1.3.8](https://img.shields.io/badge/Version-1.3.8-green.svg)
 
 NOTICE: Version 1.3x is only supported for Magento 2.3 and above. Older Magento 2 version use module version 1.2
 
