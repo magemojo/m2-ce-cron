@@ -54,6 +54,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **History Retention** - The number of days history to keep in the cron_schedule table. Default 1 (1 day).
 
+**Consumers Job Timeout** - The number of seconds to allow a consumer job to run. These jobs can infinitely run under some conditions.
+
+**Exporters Job Timeout** - The number of seconds to allow the exportProcessor job to run. Default 3600 seconds.
+
+**Consumers Govenor:** - Many bugs in consumers processes cause them to run infinitely. The consumers governor will detect these states and terminate the processes.
+
 ## Composer Install
 
 - Run these commands in your terminal:
