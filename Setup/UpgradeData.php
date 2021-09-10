@@ -44,5 +44,25 @@ class UpgradeData implements UpgradeDataInterface
                 $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
             }
         }
-	}
+        if (version_compare($context->getVersion(), '1.4.0', '<')) {
+            $this->addClusterSupport($setup, $context, $connection);
+        }
+
+        }
+
+    private function addClusterSupport(ModuleDataSetupInterface $setup, ModuleContextInterface $context, \Magento\Framework\DB\Adapter\AdapterInterface $connection)
+    {
+
+
+        $select = $connection->select()->from($setup->getTable('core_config_data'))->where('path like ?', 'magemojo/cron/cluster_support');
+        $result = $connection->fetchAll($select);
+
+        #Create core_config_data settings
+        if (count($result) == 0) {
+            $insertData = array();
+            array_push($insertData,array('scope' => 'default', 'scope_id' => 0, 'path' => 'magemojo/cron/cluster_support', 'value' => '0'));
+            $connection->insertMultiple($setup->getTable('core_config_data'), $insertData);
+        }
+
+    }
 }

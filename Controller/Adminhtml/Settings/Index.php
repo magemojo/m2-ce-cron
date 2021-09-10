@@ -77,6 +77,11 @@ class Index extends \Magento\Backend\App\Action
 	      } else {
 	        $this->resource->setConfigValue('magemojo/cron/consumersgovernor','default',0,0);
 	      }
+          if ($this->getRequest()->getParam('cluster_support')) {
+              $this->resource->setConfigValue('magemojo/cron/cluster_support','default',0,$this->getRequest()->getParam('cluster_support'));
+          } else {
+              $this->resource->setConfigValue('magemojo/cron/cluster_support','default',0,0);
+          }
 	      if (!$fail) {
 	        $this->messageManager->addSuccess('Cron Configuration Saved');
 	      }
