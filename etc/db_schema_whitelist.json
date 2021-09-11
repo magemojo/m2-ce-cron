@@ -1,0 +1,7 @@
+{
+    "cron_schedule": {
+        "column": {
+            "executed_host": true
+        }
+    }
+}
