@@ -13,9 +13,12 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 {
     const VAR_FOLDER_PATH = BP . '/'. directoryList::VAR_DIR;
     const CRON_FOLDER_PATH = '/cron/schedule';
+    const CRON_SERVICE_PIDFILE = 'cron.pid';
 
-    private $simultaniousJobs;
+    private $simultaneousJobs;
     private $phpproc;
+    private $hostname;
+    private $clusterSupport;
     private $maxload;
     private $history;
     private $config;
@@ -123,8 +126,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         if ($this->lastJobTime < time() - 360) {
           $this->lastJobTime = time();
         }
-        $pid = getmypid();
-        $this->setPid('cron.pid',$pid);
+        $pid = $this->getMyPid();
+        $this->setPid(self::CRON_SERVICE_PIDFILE, $pid);
         $this->pendingjobs = $this->resource->getAllPendingJobs();
         $this->loadavgtest = true;
         if (!is_readable('/proc/cpuinfo')) {
@@ -134,6 +137,15 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
     }
 
+    public function getMyPid(){
+        $pid = getmypid();
+        /* if we need cluster support, include the hostname as well as the pid */
+        if ($this->isClusterSupportNeeded()){
+            return $this->hostname . '.' . $pid;
+        }else{
+            return $pid;
+        }
+    }
     /**
      * Check file in var/cron for running process pid or schedule output
      *
@@ -178,7 +190,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $filelist = scandir(self::VAR_FOLDER_PATH.'/cron/');
 
       foreach ($filelist as $file) {
-        if ($file != 'cron.pid') {
+        if ($file != self::CRON_SERVICE_PIDFILE) {
           $pid = str_replace('cron.','',$file);
           if (is_numeric($pid)) {
             $pids[$pid] = file_get_contents(self::VAR_FOLDER_PATH.'/cron/'.$file);
@@ -262,12 +274,14 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
      * @return void
      */
     public function getRuntimeParameters() {
-      $this->simultaniousJobs = $this->resource->getConfigValue('magemojo/cron/jobs',0,'default');
+      $this->simultaneousJobs = $this->resource->getConfigValue('magemojo/cron/jobs',0,'default');
       $this->phpproc = $this->resource->getConfigValue('magemojo/cron/phpproc',0,'default');
       $this->maxload = $this->resource->getConfigValue('magemojo/cron/maxload',0,'default');
       $this->history = $this->resource->getConfigValue('magemojo/cron/history',0,'default');
       $this->cronenabled = $this->resource->getConfigValue('magemojo/cron/enabled',0,'default');
       $this->governor = $this->resource->getConfigValue('magemojo/cron/consumersgovernor',0,'default');
+      $this->clusterSupport = $this->resource->getConfigValue('magemojo/cron/cluster_support',0,'default');
+      $this->hostname = gethostname();
     }
 
     /**
@@ -359,7 +373,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->basedir = $this->directoryList->getRoot();
       $this->checkCronFolderExistence();
       $this->printInfo('Healthchecking Cron Service');
-      $pid = $this->checkPid('cron.pid');
+      $pid = $this->checkPid(self::CRON_SERVICE_PIDFILE);
       if (!$this->checkProcess($pid) or (!$pid)) {
         $this->initialize();
         if ($this->cronenabled == 0) {
@@ -429,7 +443,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->printWarn("Crons suspended due to maintenance mode being enabled");
         return false;
       }
-      if ($jobcount > $this->simultaniousJobs) {
+      if ($jobcount > $this->simultaneousJobs) {
         return false;
       }
       return true;
@@ -605,11 +619,11 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             #If the output is not numeric then it errored due to syntax
             if (is_numeric($pid)) {
               $this->setPid('cron.'.$pid,$job["schedule_id"]);
-              $this->setJobStatus($job["schedule_id"],'running',NULL);
+              $this->setJobStatus($job["schedule_id"],'running',NULL, $this->hostname);
               $jobcount++;
             } else {
               #Error output from command line
-              $this->setJobStatus($job["schedule_id"],'error',$pid);
+              $this->setJobStatus($job["schedule_id"],'error',$pid, $this->hostname);
               $this->unsetPid('schedule.'.$job["schedule_id"]);
             }
 
@@ -761,8 +775,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       }
 
       #Detect a coup and acquiesce
-      $pid = getmypid();
-      $execpid = $this->checkPid('cron.pid');
+      $pid = $this->getMyPid();
+      $execpid = $this->checkPid(self::CRON_SERVICE_PIDFILE);
       if ($pid != $execpid){
         exit;
       }
@@ -793,12 +807,20 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       $this->basedir = $this->directoryList->getRoot();
       $this->checkCronFolderExistence();
       $this->initialize();
+      /* gets a list of all schedule ids in the cron table */
       $scheduleids = $this->resource->cleanSchedule($this->history);
+      /* gets a list of all cron schedule output files */
       $fileids = $this->getScheduleOutputIds();
+      /* get a list of all schedule output files that are no longer in the cron schedule file */
       $diff = array_diff($fileids,$scheduleids);
       foreach ($diff as $id) {
+          /* remove the old cron schedule output files */
         $this->unsetPid('schedule.'.$id);
       }
+    }
+
+    public function isClusterSupportNeeded(){
+        return $this->clusterSupport > 0;
     }
 
     /**

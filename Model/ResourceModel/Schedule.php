@@ -91,7 +91,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      *
      * @return void
      */
-    public function setJobStatus($scheduleid, $status, $output) {
+    public function setJobStatus($scheduleid, $status, $output, $executionHost = null) {
       $connection = $this->getConnection();
       $updatedata = array('status' => $status);
       $updatedata["messages"] = $output;
@@ -100,6 +100,9 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
       }
       if ($status == 'running') {
         $updatedata["executed_at"] = date('Y-m-d H:i:s',time());
+      }
+      if (!empty($executionHost)){
+          $updatedata["execution_host"] = $executionHost;
       }
       $connection->update($this->getTable('cron_schedule'),$updatedata,['schedule_id = ?' => $scheduleid]);
     }
