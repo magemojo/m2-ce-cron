@@ -126,7 +126,11 @@ class Schedule extends AbstractModel
     public function initialize() {
         #Keep the service alive indefinitely
         ini_set('max_execution_time', 0);
-
+        #Set transaction name for New Relic, if installed
+        if (extension_loaded ('newrelic')) {
+            newrelic_name_transaction ('magemojo_cron');
+            newrelic_background_job();
+        }
         $this->getConfig();
         $this->getRuntimeParameters();
         if (!$this->cronenabled) {
@@ -548,14 +552,19 @@ class Schedule extends AbstractModel
         #Force UTC
         date_default_timezone_set('UTC');
 
-        #Set transaction name for New Relic, if installed
-        if (extension_loaded ('newrelic')) {
-            newrelic_name_transaction ('magemojo_cron_service');
-        }
-
         $this->printInfo("Starting Cron Service");
         #Loop until killed or heat death of the universe
         while (true) {
+            if (extension_loaded ('newrelic')) {
+               /* send the transaction data up to newrelic. Start fresh for this service loop. */
+                newrelic_end_transaction();
+
+                newrelic_start_transaction(ini_get('newrelic.appname'), ini_get('newrelic.license'));
+                newrelic_name_transaction ('magemojo_cron_service');
+                newrelic_background_job();
+            }
+
+
             $this->getRuntimeParameters();
             if ($this->cronenabled == 0) {
                 $this->printWarn("Stopped Cron Service by maintenance is enabled");
@@ -647,6 +656,10 @@ class Schedule extends AbstractModel
 
             #Sanity check processes and look for escaped inmates
             $this->asylum();
+            if (extension_loaded ('newrelic')) {
+                /* stop timing the current transaction, but continue instrumenting it */
+                newrelic_end_of_transaction();
+            }
 
             #Take a break
             sleep(5);
