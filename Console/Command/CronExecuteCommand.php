@@ -33,7 +33,7 @@ class CronExecuteCommand extends Command
      *
      * @param ObjectManagerFactory $objectManagerFactory
      */
-    public function __construct(ObjectManagerFactory $objectManagerFactory, \MageMojo\Cron\Model\Schedule $schedule)
+    public function __construct(ObjectManagerFactory $objectManagerFactory, Schedule $schedule)
     {
         $this->objectManagerFactory = $objectManagerFactory;
         $this->schedule = $schedule;

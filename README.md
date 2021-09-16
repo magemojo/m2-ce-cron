@@ -19,6 +19,8 @@ In addition to the service model many other enhancements have been made.  For ex
 
 In version 1.1 Cron Reporting was added to the admin to show job code statistics and list cron run errors.
 
+In version 1.2.5 Cron execution will run if in maintenance mode with exempt IPs, allowing for full internal verification including necessary crons.
+
 In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinite loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
 
 In version 1.3.7 the consumers governor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
@@ -45,6 +47,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Admin Options
 
 **Cron Enabled** - Turn the cron on/off.
+
+**Cluster Support** - REQUIRED for Magento Commerce Cloud or any scaled/clustered environment. If more than one app server could potentially execute the `cron:run` command, 
+enable this. This will allow the service to gracefully switch between "leader" servers as required.
 
 **Maximum Cron Processes** - The number of cron threads running in parallel.  This option is the sum of all defined jobs.  Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1, only 1 job will execute sequentially until all 5 are completed. Default 3.
 

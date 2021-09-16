@@ -1,20 +1,24 @@
 <?php
 
 namespace MageMojo\Cron\Controller\Adminhtml\Reports;
+use MageMojo\Cron\Model\ResourceModel\Schedule;
 use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\Page;
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Backend reports controller
  */
-class Index extends \Magento\Backend\App\Action
+class Index extends Action
 {
-	/** @var \Magento\Framework\View\Result\PageFactory  */
+	/** @var PageFactory  */
 	protected $resultPageFactory;
 	protected $resource;
 	public function __construct(
-	     \Magento\Backend\App\Action\Context $context,
-	     \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-	     \MageMojo\Cron\Model\ResourceModel\Schedule $resource
+	     Context $context,
+	     PageFactory $resultPageFactory,
+	     Schedule $resource
 	) {
 	     $this->resultPageFactory = $resultPageFactory;
 	     $this->resource = $resource;
@@ -24,7 +28,7 @@ class Index extends \Magento\Backend\App\Action
 	/**
 	* Load the page defined in view/adminhtml/layout/magemojocron_reports_index.xml
 	*
-	* @return \Magento\Framework\View\Result\Page
+	* @return Page
 	*/
 	public function execute()
 	{

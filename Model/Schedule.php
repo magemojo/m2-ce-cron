@@ -78,7 +78,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get cron schedule config derrived from crontab.xml files
+     * Get cron schedule config derived from crontab.xml files
      *
      * @return array
      */
@@ -771,8 +771,8 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
 
         $pid = $pids["scheduleid"];
         $this->printInfo("Found orphaned pid file for schedule_id ".$scheduleid);
-        $this->unsetPid('cron.'.$pid);
       }
+            $this->unsetPid($this->getPidFileName($pid));
 
       #Detect a coup and acquiesce
       $pid = $this->getMyPid();
@@ -875,4 +875,66 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
       return true;
     }
 
+    public function getPidFileName($pid){
+        $prefix = 'cron.';
+
+        if ($this->isClusterSupportNeeded()){
+            return $prefix.$this->hostname . '.' . $pid;
+        }else{
+            return $prefix.$pid;
+        }
+    }
+
+    /**
+     * @return int number of currently running jobs
+     */
+    public function checkRunningJobs(){
+        $running = $this->getRunningPids();
+        $jobcount = 0;
+        foreach ($running as $pid=>$scheduleid) {
+
+            if ($this->governor) {
+                $job = $this->getJob($scheduleid);
+                if ($job) {
+                    $jobconfig = $this->getJobConfig($job["job_code"]);
+                    if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+                        #run the consumers governor
+                        $this->consumersGovenor($pid, $scheduleid);
+                    }
+                }
+            }
+
+            if (!$this->checkProcess($pid)) {
+                #IF this is a consumers job it was run under strace and we do not want this output
+                if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+                    $output = '';
+                } else {
+                    $output = $this->getJobOutput($scheduleid);
+                }
+
+                #If output had "error" in the text, assume it errored
+                if (strpos(strtolower($output),'error') > 0) {
+                    $this->setJobStatus($scheduleid,'error',$output);
+                } else {
+                    $this->setJobStatus($scheduleid,'success',$output);
+                }
+                $this->unsetPid($this->getPidFileName($pid));
+                $this->unsetPid('schedule.'.$scheduleid);
+            } else {
+                $jobcount++;
+            }
+        }
+        return $jobcount;
+    }
+
+    public function isCurrentHost($pid){
+        /* for clustered environments, pid may be written as $this->hostname . '.' . $pid; */
+
+        if (strpos($pid,'.') !== false) {
+            $pidHost = explode('.',pid)[0];
+            return $this->hostname == $pidHost;
+        }
+
+        return true;
+    }
 }

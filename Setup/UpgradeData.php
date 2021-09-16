@@ -2,6 +2,7 @@
 
 namespace MageMojo\Cron\Setup;
 
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Setup\UpgradeDataInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -50,7 +51,7 @@ class UpgradeData implements UpgradeDataInterface
 
         }
 
-    private function addClusterSupport(ModuleDataSetupInterface $setup, ModuleContextInterface $context, \Magento\Framework\DB\Adapter\AdapterInterface $connection)
+    private function addClusterSupport(ModuleDataSetupInterface $setup, ModuleContextInterface $context, AdapterInterface $connection)
     {
 
 

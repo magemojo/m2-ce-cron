@@ -16,6 +16,13 @@
         <tr>
         <td colspan="2" style="padding-bottom: 10px;">Turn the cron on/off.</td>
         </tr>
+        <tr id="row_cluster_support">
+            <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Cluster Support:</b></span></label></td>
+            <td class="value" align="left"><?php $block->checkbox('magemojo/cron/cluster_support','cluster_support'); ?></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding-bottom: 10px;">REQUIRED for Magento Commerce Cloud or any scaled/clustered environment. If more than one app server could potentially run the cron service, enable this.</td>
+        </tr>
         <tr id="row_max_processes">
           <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Maximum Cron Processes:</b></span></label></td>
           <td class="value" align="left"><?php $block->textfield('magemojo/cron/jobs','maxjobs',2,2); ?></td>
@@ -60,16 +67,7 @@
           <td class="value" align="left"><?php $block->checkbox('magemojo/cron/consumersgovernor','consumersgovernor'); ?></td>
         </tr>
         <tr>
-            <td colspan="2" style="padding-bottom: 10px;">Many bugs in consumers processes cause them to run infinately. The consumers governor will detect these states and terminate the processes.</td>
-        </tr>
-        <tr id="row_cluster_support">
-            <td class="label" width="250"><span data-config-scope="[STORE VIEW]"><b>Cluster Support:</b></span></label></td>
-            <td class="value" align="left"><?php $block->dropdown('magemojo/cron/cluster_support','cluster_support'); ?></td>
-        </tr>
-        <tr>
-            <td colspan="2" style="padding-bottom: 10px;">The cron service executes on every app server where the crontab is installed or where the Magento cron:run command is called.
-                In the case of clustered environments, this should only run on one server.
-                Use this option to enable the appropriate support.</td>
+            <td colspan="2" style="padding-bottom: 10px;">Many bugs in consumers processes cause them to run indefinately. The consumers governor will detect these states and terminate the processes.</td>
         </tr>
       </table>
     </div>

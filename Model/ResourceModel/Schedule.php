@@ -189,7 +189,7 @@ class Schedule extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * Set jobs to error if runtime service was termininated for running jobs
+     * Set jobs to error if runtime service was terminated for running jobs
      *
      * @return void
      */
