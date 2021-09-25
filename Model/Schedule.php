@@ -227,9 +227,9 @@ class Schedule extends AbstractModel
         }
 
         /* Cluster Support */
-        if ($clustered && isset($pids[$this->hostname])) {
+        if ($clustered) {
             /* in a clustered environment, only check for running processes on the current host */
-            return $pids[$this->hostname];
+            return $pids[$this->hostname] ?? [];
         } elseif (empty($pids)){
             return [];
         } else {
