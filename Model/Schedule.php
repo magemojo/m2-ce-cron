@@ -32,11 +32,11 @@ class Schedule extends AbstractModel
     private $history;
     private $config;
     private $cronenabled;
-    private $runningPids;
     private $cronconfig;
     private $lastJobTime;
     private $pendingjobs;
     private $loadavgtest;
+    private $governor;
     private $directoryList;
     private $resource;
     private $maintenance;
@@ -201,46 +201,36 @@ class Schedule extends AbstractModel
      */
     public function getRunningPids() {
         $pids = [];
-        $clustered = false;
         $filelist = scandir(self::VAR_FOLDER_PATH.'/cron/');
 
         foreach ($filelist as $file) {
-            /* ignore current dir, parent dir, and the cron service file itself */
+            /* ignore current dir, parent dir, and the cron service file itself. */
             $isCronPidFile = is_int(strpos($file,"cron"));
             if ($isCronPidFile && $file != self::CRON_SERVICE_PIDFILE) {
+                /* filenames will be in the form of cron.(host.)+(pid) ie cron.12345 or cron.thishostname.12345 */
                 $hostPid = explode('.',str_replace('cron.','',$file));
 
-                /* For clustered environments, the hostname will be included in the filename */
                 if (count($hostPid) > 1) {
                     $executionHost = $hostPid[0];
                     $pid = $hostPid[1];
-                    $clustered = true;
                 }else {
-                    $executionHost = 0;
+                    $executionHost = null;
                     $pid = $hostPid[0];
                 }
 
-                $isMine = !$clustered || $executionHost == $this->hostname;
+                $isMine = empty($executionHost) || $executionHost == $this->hostname;
 
                 if (is_numeric($pid) && $isMine) {
                     /* add to an array indexed by the hostname */
                     $filePath = self::VAR_FOLDER_PATH.'/cron/'.$file;
                     if (file_exists($filePath)) {
-                        $pids[$executionHost][$pid] = file_get_contents(self::VAR_FOLDER_PATH . '/cron/' . $file);
+                        $pids[$pid] = file_get_contents(self::VAR_FOLDER_PATH . '/cron/' . $file);
                     }
                 }
             }
         }
 
-        /* Cluster Support */
-        if ($clustered) {
-            /* in a clustered environment, only check for running processes on the current host */
-            return $pids[$this->hostname] ?? [];
-        } elseif (empty($pids)){
-            return [];
-        } else {
-            return $pids[0];
-        }
+        return $pids;
     }
 
     /**
@@ -284,18 +274,8 @@ class Schedule extends AbstractModel
      */
     public function cleanupProcesses() {
         $this->printInfo('Running Process Cleanup');
-        $running = array();
-        $pids =  $this->getRunningPids();
-        foreach ($pids as $pid=>$scheduleid) {
-            if (!$this->checkProcess($pid)) {
-                $this->unsetPid($this->getPidFileName($pid));
-                $this->resource->resetSchedule($scheduleid);
-            } else {
-                array_push($running,$pid);
-            }
-        }
 
-        $this->runningPids = $running;
+        $this->checkRunningJobs();
         if ($this->governor) {
             $this->consumersCleanup();
         }
@@ -425,8 +405,8 @@ class Schedule extends AbstractModel
         $noPid = empty($pid);
         $currentHost = $this->isCurrentHost($pid);
         $processRunning = $this->checkProcess($pid);
+        $this->initialize();
         if ($noPid || !($currentHost && $processRunning)) {
-            $this->initialize();
             if ($this->cronenabled == 0) {
                 exit;
             } else {
@@ -562,7 +542,7 @@ class Schedule extends AbstractModel
         #Loop until killed or heat death of the universe
         while (true) {
             if (extension_loaded ('newrelic')) {
-               /* send the transaction data up to newrelic. Start fresh for this service loop. */
+                /* send the transaction data up to newrelic. Start fresh for this service loop. */
                 newrelic_end_transaction();
 
                 newrelic_start_transaction(ini_get('newrelic.appname'), ini_get('newrelic.license'));
@@ -766,8 +746,7 @@ class Schedule extends AbstractModel
         $childpid = exec('pgrep -P '.$pid);
         if ($childpid) {
             #Recursive call to get the final php process
-            $childpid = $this->getChildProcess($childpid);
-            return $childpid;
+            return $this->getChildProcess($childpid);
         } else {
             return $pid;
         }
@@ -779,18 +758,20 @@ class Schedule extends AbstractModel
      * @return void
      */
     public function asylum() {
-        #Look for running pids and compare to jobs listed as running in cron_schedule
+        $this->checkRunningJobs();
+
+        //Look for anything still "running" and compare to jobs listed as running in cron_schedule
         $crons = $this->getRunningPids();
         $jobs = $this->resource->getJobsByStatus('running', $this->isClusterSupportNeeded() ? $this->hostname : null);
-        $running = array();
-        $schedules = array();
-        $pids = array();
+        $running = [];
+        $schedules = [];
+        $pids = [];
         foreach ($crons as $pid=>$scheduleid) {
-            array_push($running,$scheduleid);
+            $running[] = $scheduleid;
             $pids[$scheduleid] = $pid;
         }
         foreach ($jobs as $job) {
-            array_push($schedules,$job["schedule_id"]);
+            $schedules[] = $job["schedule_id"];
         }
         $diff = array_diff($schedules,$running);
         foreach ($diff as $scheduleid) {
