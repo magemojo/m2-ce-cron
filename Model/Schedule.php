@@ -219,9 +219,15 @@ class Schedule extends AbstractModel
                     $executionHost = 0;
                     $pid = $hostPid[0];
                 }
-                if (is_numeric($pid)) {
+
+                $isMine = !$clustered || $executionHost == $this->hostname;
+
+                if (is_numeric($pid) && $isMine) {
                     /* add to an array indexed by the hostname */
-                    $pids[$executionHost][$pid] = file_get_contents(self::VAR_FOLDER_PATH . '/cron/' . $file);
+                    $filePath = self::VAR_FOLDER_PATH.'/cron/'.$file;
+                    if (file_exists($filePath)) {
+                        $pids[$executionHost][$pid] = file_get_contents(self::VAR_FOLDER_PATH . '/cron/' . $file);
+                    }
                 }
             }
         }
