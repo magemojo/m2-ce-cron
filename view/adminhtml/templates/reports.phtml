@@ -5,6 +5,7 @@
   /* Times are stored in UTC, converting to the locale timezone for report */
   $utc = date("Y-m-d h:i:s A");
   $timezone = $block->getLocalTimezone();
+  $clusterSupport = $block->getClusterSupport();
   date_default_timezone_set($timezone);
   $local = date("Y-m-d h:i:s A");
   $timediff = (strtotime($utc) - strtotime($local));
@@ -23,6 +24,9 @@
 <th style="padding: 4px; cursor: pointer;" onclick="sortTable(5)"><b>Error</b></th>
 <th style="padding: 4px; cursor: pointer;" onclick="sortTable(6)"><b>Last Executed</b></th>
 <th style="padding: 4px; cursor: pointer;" onclick="sortTable(7)"><b>Last Runtime</b></th>
+<?php if ($clusterSupport){?>
+<th style="padding: 4px; cursor: pointer;" onclick="sortTable(8)"><b>Last Executed Host</b></th>
+<?php } ?>
 <th style="padding: 4px;"><b>Actions</b></th>
 </tr>
 </thead>
@@ -40,6 +44,7 @@
     if (($report["status"] == 'success' and $jobs[$report["job_code"]]["executed_at"] == 'N/A') or $report["status"] == 'running') {
       $jobs[$report["job_code"]]["executed_at"] = $report["executed_at"];
       $jobs[$report["job_code"]]["finished_at"] = $report["finished_at"];
+      $jobs[$report["job_code"]]["executed_host"] = $report["executed_host"];
     }
     $jobs[$report["job_code"]][$report["status"]] = $report["count"];
   }
@@ -63,6 +68,9 @@
     print '<td style="padding: 4px;">'.$job["error"].'</td>';
     print '<td style="padding: 4px;">'.$executed.'</td>';
     print '<td style="padding: 4px;">'.$runtime.'</td>';
+    if ($clusterSupport) {
+        print '<td style="padding: 4px;">' . $job["executed_host"] . '</td>';
+    }
     print '<td style="padding: 4px;"><a href="'.$block->getUrl("magemojocron/reports/execute",array("jobcode" => $job_code)).'">Execute</a></td>';
     print '</tr>';
   }
