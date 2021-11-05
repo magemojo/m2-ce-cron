@@ -47,23 +47,13 @@ class Reports extends Template
     }
 
     /**
-     * Get timezone locale
+     * Get zimezone locale
      *
      * @return string
      */
     public function getLocalTimezone()
     {
         return $this->resourceconfig->getConfigValue('general/locale/timezone', 'default', 0);
-    }
-
-    /**
-     * Get cluster support configuration value
-     *
-     * @return string
-     */
-    public function getClusterSupport()
-    {
-        return $this->resourceconfig->getConfigValue('magemojo/cron/cluster_support', 'default', 0);
     }
 
 }
