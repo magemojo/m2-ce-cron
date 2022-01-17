@@ -32,6 +32,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
     private $consumerConfig;
     private $deploymentConfig;
     private $scopeConfig;
+    private $queueRepository;
     private $mqConnectionTypeResolver;
 
     /**
@@ -60,6 +61,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         \Magento\Framework\MessageQueue\Consumer\ConfigInterface $consumerConfig,
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Framework\MessageQueue\QueueRepository $queueRepository,
         ConnectionTypeResolver $mqConnectionTypeResolver = null
     ) {
         $this->cronconfig = $cronconfig;
@@ -70,6 +72,7 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->consumerConfig = $consumerConfig;
         $this->deploymentConfig = $deploymentConfig;
         $this->scopeConfig = $scopeConfig;
+        $this->queueRepository = $queueRepository;
         $this->mqConnectionTypeResolver = $mqConnectionTypeResolver
             ?: ObjectManager::getInstance()->get(ConnectionTypeResolver::class);
     }
@@ -850,7 +853,25 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->printInfo(sprintf('Consumer "%s" skipped as required connection "%s" is not configured. %s',$consumerName,$connectionName,$e->getMessage()));
         return false;
       }
-      return true;
+
+      try {
+        return $this->checkMessagesAvailable(
+          $connectionName,
+          $consumerConfig->getQueue()
+          );
+        } catch (\LogicException $e) {
+          return false;
+        }
+    }
+
+    private function checkMessagesAvailable($connectionName, $queueName): bool  {
+        $queue = $this->queueRepository->get($connectionName, $queueName);
+        $message = $queue->dequeue();
+        if ($message) {
+            $queue->reject($message);
+            return true;
+        }
+        return false;
     }
 
 }
