@@ -573,6 +573,9 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
             #if this is a consumers job use a different runtime cmd
             if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
               $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
+              if (!$this->canExecuteConsumer($consumerName)) {
+                  continue;
+              }
               $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
               if ($maxConsumerMessages) {
                 $runtime .= ' --max-messages=' . $maxConsumerMessages;
@@ -853,14 +856,21 @@ class Schedule extends \Magento\Framework\Model\AbstractModel
         $this->printInfo(sprintf('Consumer "%s" skipped as required connection "%s" is not configured. %s',$consumerName,$connectionName,$e->getMessage()));
         return false;
       }
+      return true;
+    }
 
-      try {
-        return $this->checkMessagesAvailable(
-          $connectionName,
-          $consumerConfig->getQueue()
-          );
+    private function canExecuteConsumer($consumerName)
+    {
+        $config = $this->consumerConfig->getConsumer($consumerName);
+        $connectionName = $config->getConnection();
+        $queueName = $config->getQueue();
+        try {
+            return $this->checkMessagesAvailable(
+                $connectionName,
+                $queueName
+            );
         } catch (\LogicException $e) {
-          return false;
+            return false;
         }
     }
 
