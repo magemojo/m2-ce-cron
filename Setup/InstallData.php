@@ -2,6 +2,7 @@
 
 namespace MageMojo\Cron\Setup;
 
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Module\Setup\Migration;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -15,7 +16,7 @@ class InstallData implements InstallDataInterface
 {
     private $directorylist;
 
-    public function __construct(\Magento\Framework\App\Filesystem\DirectoryList $directorylist)
+    public function __construct(DirectoryList $directorylist)
     {
       $this->directorylist = $directorylist;
     }
