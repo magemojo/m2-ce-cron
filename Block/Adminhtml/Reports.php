@@ -1,19 +1,22 @@
 <?php
 namespace MageMojo\Cron\Block\Adminhtml;
+use MageMojo\Cron\Model\ResourceModel\Schedule;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
 
 /**
  * Backend reports block
  */
-class Reports extends \Magento\Framework\View\Element\Template
+class Reports extends Template
 {
     private $_cronconfig;
     protected $resourceconfig;
 
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Framework\App\ResourceConnection $resource,
-        \MageMojo\Cron\Model\ResourceModel\Schedule $resourceconfig,
+        Context $context,
+        ResourceConnection $resource,
+        Schedule $resourceconfig,
         array $data = []
     ) {
         $this->_resource = $resource;

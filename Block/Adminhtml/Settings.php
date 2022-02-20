@@ -1,19 +1,22 @@
 <?php
 namespace MageMojo\Cron\Block\Adminhtml;
+use MageMojo\Cron\Model\ResourceModel\Schedule;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
 
 /**
  * Backend settings block
  */
-class Settings extends \Magento\Framework\View\Element\Template
+class Settings extends Template
 {
     private $_cronconfig;
     protected $resourceconfig;
 
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Framework\App\ResourceConnection $resource,
-        \MageMojo\Cron\Model\ResourceModel\Schedule $resourceconfig,
+        Context $context,
+        ResourceConnection $resource,
+        Schedule $resourceconfig,
         array $data = []
     ) {
         $this->_resource = $resource;
@@ -59,4 +62,26 @@ class Settings extends \Magento\Framework\View\Element\Template
       print '<input type="text" name="'.$name.'" size="'.$size.'" maxchar="'.$max.'" value="'.htmlspecialchars($value).'">';
     }
 
+    /**
+     * Get rendered dropdown select html
+     *
+     * @return string
+     */
+    public function dropdown($path, $name) {
+        $value = $this->resourceconfig->getConfigValue($path, 'default', 0);
+        $html = <<<HTML
+<select name="$name" id="$path">
+  <option value="0">none</option>
+  <option value="1">Magento Commerce Cloud</option>
+</select>
+HTML;
+
+        if ($value) {
+            $html .= <<<HTML
+<script type="javascript" lang="js">document.getElementById('$path').value=$value;</script>
+HTML;
+
+        }
+        print $html;
+    }
 }
