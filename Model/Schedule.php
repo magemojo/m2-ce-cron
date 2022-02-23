@@ -17,6 +17,7 @@ use Magento\Framework\MessageQueue\ConnectionTypeResolver;
 use Magento\Framework\MessageQueue\Consumer\Config\ConsumerConfigItemInterface;
 use Magento\Framework\MessageQueue\Consumer\ConfigInterface;
 use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\MessageQueue\QueueRepository;
 
 class Schedule extends AbstractModel
 {
@@ -44,6 +45,7 @@ class Schedule extends AbstractModel
     private $consumerConfig;
     private $deploymentConfig;
     private $scopeConfig;
+    private $queueRepository;
     private $mqConnectionTypeResolver;
 
     /**
@@ -72,6 +74,7 @@ class Schedule extends AbstractModel
         ConfigInterface            $consumerConfig,
         DeploymentConfig           $deploymentConfig,
         ScopeConfigInterface       $scopeConfig,
+        QueueRepository $queueRepository,
         ConnectionTypeResolver     $mqConnectionTypeResolver = null
     ) {
         $this->cronconfig = $cronconfig;
@@ -82,6 +85,7 @@ class Schedule extends AbstractModel
         $this->consumerConfig = $consumerConfig;
         $this->deploymentConfig = $deploymentConfig;
         $this->scopeConfig = $scopeConfig;
+        $this->queueRepository = $queueRepository;
         $this->mqConnectionTypeResolver = $mqConnectionTypeResolver
             ?: ObjectManager::getInstance()->get(ConnectionTypeResolver::class);
     }
@@ -579,6 +583,7 @@ class Schedule extends AbstractModel
             if (!$exportersTimeout) {
                 $exportersTimeout = 0;
             }
+
             while (count($pending) && $this->canRunJobs($jobcount, $pending)) {
                 $job = array_shift($pending);
                 $runcheck = $this->resource->getJobByStatus($job["job_code"],'running');
@@ -590,6 +595,9 @@ class Schedule extends AbstractModel
                     #if this is a consumers job use a different runtime cmd
                     if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
                         $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
+                        if (!$this->canExecuteConsumer($consumerName)) {
+                            continue;
+                        }
                         $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
                         if ($maxConsumerMessages) {
                             $runtime .= ' --max-messages=' . $maxConsumerMessages;
@@ -904,6 +912,33 @@ class Schedule extends AbstractModel
         }
     }
 
+
+    private function canExecuteConsumer($consumerName)
+    {
+        $config = $this->consumerConfig->getConsumer($consumerName);
+        $connectionName = $config->getConnection();
+        $queueName = $config->getQueue();
+        try {
+            return $this->checkMessagesAvailable(
+                $connectionName,
+                $queueName
+            );
+        } catch (\LogicException $e) {
+            return false;
+        }
+    }
+
+    private function checkMessagesAvailable($connectionName, $queueName): bool  {
+        $queue = $this->queueRepository->get($connectionName, $queueName);
+        $message = $queue->dequeue();
+        if ($message) {
+            $queue->reject($message);
+            return true;
+        }
+        return false;
+    }
+
+
     /**
      * @return int number of currently running jobs
      */
@@ -957,4 +992,5 @@ class Schedule extends AbstractModel
 
         return true;
     }
+
 }
