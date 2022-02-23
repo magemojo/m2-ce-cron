@@ -3,7 +3,7 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
-![Version 1.3.8](https://img.shields.io/badge/Version-1.3.8-green.svg)
+![Version 1.4.2](https://img.shields.io/badge/Version-1.4.2-green.svg)
 
 NOTICE: Version 1.3x is only supported for Magento 2.3 and above. Older Magento 2 version use module version 1.2
 
@@ -24,6 +24,8 @@ In version 1.2.5 Cron execution will run if in maintenance mode with exempt IPs,
 In version 1.3 fixes are implemented for the consumers_runner cron job. This job code is a throwback from magento 1 and is more frequently used in Magento 2.3. It runs under its own scheduler which can execute many child jobs and bomb the system. In this version of the module this parent job is intercepted and written as individual jobs in the cron_schedule table and then run in a sane manner from there. These consumer jobs can also go into infinite loops, so a timeout is imposed on them by default of 30 seconds. This setting can be adjusted in the admin.
 
 In version 1.3.7 the consumers governor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
+
+In version 1.4.2 Support for clusters was added and fix for honoring disabled consumers jobs
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
