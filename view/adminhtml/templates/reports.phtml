@@ -49,9 +49,9 @@
       $executed = $job["executed_at"];
       $runtime = '';
     } else {
-      $executed = strtotime($job["executed_at"]);
+      $executed = strtotime((string)$job["executed_at"]);
       $executed = date("Y-m-d h:i:s A",($executed - $timediff));
-      $runtime = strtotime($job["finished_at"]) - strtotime($job["executed_at"]) .'s';
+      $runtime = strtotime((string)$job["finished_at"]) - strtotime((string)$job["executed_at"]) .'s';
     }
     //print_r($job);
     print '<tr>';

@@ -353,7 +353,7 @@ class Schedule extends AbstractModel
         foreach($this->config as $job) {
             if (isset($job["schedule"])) {
                 $schedule = array();
-                $expr = explode(' ',$job["schedule"]);
+                $expr = explode(' ',(string)$job["schedule"]);
                 $buildtime = (floor($from/60)*60);
                 while ($buildtime < $to) {
                     $buildtime = $buildtime + 60;
@@ -448,9 +448,9 @@ class Schedule extends AbstractModel
         }
         $code = trim($stub);
         $code = str_replace('<<basedir>>',$this->basedir,$code);
-        $code = str_replace('<<method>>',$jobconfig["method"],$code);
-        $code = str_replace('<<instance>>',$jobconfig["instance"],$code);
-        $code = str_replace('<<scheduleid>>',$scheduleid,$code);
+        $code = str_replace('<<method>>',(string)$jobconfig["method"],$code);
+        $code = str_replace('<<instance>>',(string)$jobconfig["instance"],$code);
+        $code = str_replace('<<scheduleid>>',(string)$scheduleid,$code);
         $code = str_replace('<<name>>',$jobconfig["name"]??'',$code);
         return $code;
     }
@@ -594,7 +594,7 @@ class Schedule extends AbstractModel
                     }
                     #if this is a consumers job use a different runtime cmd
                     if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
-                        $consumerName = str_replace("mm_consumer_","",$jobconfig["name"]);
+                        $consumerName = str_replace("mm_consumer_","",(string)$jobconfig["name"]);
                         if (!$this->canExecuteConsumer($consumerName)) {
                             continue;
                         }
@@ -967,7 +967,7 @@ class Schedule extends AbstractModel
                 }
 
                 #If output had "error" in the text, assume it errored
-                if (strpos(strtolower($output),'error') > 0) {
+                if (strpos(strtolower((string)$output),'error') > 0) {
                     $this->setJobStatus($scheduleid,'error',$output);
                 } else {
                     $this->setJobStatus($scheduleid,'success',$output);
@@ -986,7 +986,7 @@ class Schedule extends AbstractModel
         /* for clustered environments, pid may be written as $this->hostname . '.' . $pid; */
 
         if (strpos($pid,'.') !== false) {
-            $pidHost = explode('.',$pid)[0];
+            $pidHost = explode('.',(string)$pid)[0];
             return $this->hostname == $pidHost;
         }
 
