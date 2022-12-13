@@ -3,7 +3,7 @@
 # Cron
 #### This module for Magento 2 overrides base magento cron functionality, fixes known bugs, and provides a cron service model to control cron process execution. 
 
-![Version 1.4.2](https://img.shields.io/badge/Version-1.4.2-green.svg)
+![Version 1.4.2](https://img.shields.io/badge/Version-1.4.3-green.svg)
 
 NOTICE: Version 1.3x is only supported for Magento 2.3 and above. Older Magento 2 version use module version 1.2
 
@@ -26,6 +26,8 @@ In version 1.3 fixes are implemented for the consumers_runner cron job. This job
 In version 1.3.7 the consumers governor was added to terminate idle consumers jobs. Bugs in these jobs otherwise prevent these jobs from completing.
 
 In version 1.4.2 Support for clusters was added and fix for honoring disabled consumers jobs
+
+In version 1.4.3 Support for PHP 8.1
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
