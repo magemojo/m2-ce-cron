@@ -391,7 +391,7 @@ class Schedule extends AbstractModel
         try {
             $this->file->createDirectory(self::VAR_FOLDER_PATH.self::CRON_FOLDER_PATH);
         } catch (FileSystemException $e) {
-            echo "Can't create folder in following path: " . self::VAR_FOLDER_PATH . self::CRON_FOLDER_PATH.PHP_EOL;
+            $this->printError("Can't create folder in following path: " . self::VAR_FOLDER_PATH . self::CRON_FOLDER_PATH.PHP_EOL);
         }
     }
 
@@ -412,7 +412,7 @@ class Schedule extends AbstractModel
         $this->initialize();
         if ($noPid || !($currentHost && $processRunning)) {
             if ($this->cronenabled == 0) {
-                exit;
+                $this->exit();
             } else {
                 $this->service();
             }
@@ -538,6 +538,8 @@ class Schedule extends AbstractModel
     public function service() {
         #Get the code stub that executes individual crons
         $stub = file_get_contents(__DIR__.'/stub.txt');
+        /* strip whitespace */
+        $stub = preg_replace('/\s\s+/', ' ', $stub);
 
         #Force UTC
         date_default_timezone_set('UTC');
@@ -558,7 +560,7 @@ class Schedule extends AbstractModel
             $this->getRuntimeParameters();
             if ($this->cronenabled == 0) {
                 $this->printWarn("Stopped Cron Service by maintenance is enabled");
-                exit;
+                $this->exit();
             }
 
             #Checking if new jobs need to be scheduled
@@ -596,6 +598,7 @@ class Schedule extends AbstractModel
                     if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
                         $consumerName = str_replace("mm_consumer_","",(string)$jobconfig["name"]);
                         if (!$this->canExecuteConsumer($consumerName)) {
+                            $this->setJobStatus($job["schedule_id"],'success','No messages to process.');
                             continue;
                         }
                         $runtime = "bin/magento queue:consumers:start " . escapeshellarg($consumerName);
@@ -646,6 +649,17 @@ class Schedule extends AbstractModel
                         $this->resource->setMissedJobs($job["job_code"]);
                     }
                 }
+
+                // unset job-specific variables
+                unset($job);
+                unset($runcheck);
+                unset($jobconfig);
+                unset($consumerName);
+                unset($runtime);
+                unset($cmd);
+                unset($exec);
+                unset($execOutput);
+                unset($pid);
             }
 
             #Sanity check processes and look for escaped inmates
@@ -801,7 +815,8 @@ class Schedule extends AbstractModel
         $pid = $this->getMyPid();
         $execpid = $this->checkPid(self::CRON_SERVICE_PIDFILE);
         if ($pid != $execpid){
-            exit;
+            // wait for currently running jobs to finish and then exit
+            $this->exit();
         }
     }
 
@@ -846,6 +861,17 @@ class Schedule extends AbstractModel
     public function isClusterSupportNeeded(): bool
     {
         return $this->clusterSupport > 0;
+    }
+
+    /**
+     * print debug log
+     *
+     * @param string $msg
+     * @return void
+     */
+    private function printDebug(string $msg = '') {
+        $time = date('Y-m-d H:i:s', time());
+        print "[$time] DEBUG $msg" . PHP_EOL;
     }
 
     /**
@@ -991,6 +1017,26 @@ class Schedule extends AbstractModel
         }
 
         return true;
+    }
+
+    /**
+     * if asked to exit, ensure any running jobs are completed/handled and not abandoned
+     *
+     * @return void
+     */
+    private function exit()
+    {
+        while(($runningPids = $this->checkRunningJobs()) > 0){
+            $this->printInfo("Cron Shutdown Requested. Waiting for $runningPids jobs to complete.");
+
+            # give the currently running jobs some time to finish
+            sleep(5);
+
+            # check jobs/clean up
+            $this->asylum();
+        }
+
+        exit;
     }
 
 }
