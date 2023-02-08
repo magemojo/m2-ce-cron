@@ -559,7 +559,7 @@ class Schedule extends AbstractModel
 
             $this->getRuntimeParameters();
             if ($this->cronenabled == 0) {
-                $this->printWarn("Stopped Cron Service by maintenance is enabled");
+                $this->printWarn("Stopped Cron Service. Cron disabled.");
                 $this->exit();
             }
 
