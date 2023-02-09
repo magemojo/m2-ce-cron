@@ -598,6 +598,7 @@ class Schedule extends AbstractModel
                     if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
                         $consumerName = str_replace("mm_consumer_","",(string)$jobconfig["name"]);
                         if (!$this->canExecuteConsumer($consumerName)) {
+                            $this->setJobStatus($job["schedule_id"],'running','', $this->hostname);
                             $this->setJobStatus($job["schedule_id"],'success','No messages to process.');
                             continue;
                         }
