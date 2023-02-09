@@ -40,6 +40,11 @@
             <argument name="cronconfig" xsi:type="object">MageMojoCronConfig</argument>
         </arguments>
     </type>
-
+    <!-- https://github.com/magemojo/m2-ce-cron/issues/131 -->
+    <type name="Magento\Framework\App\MaintenanceMode">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem</argument>
+        </arguments>
+    </type>
 </config>
 
