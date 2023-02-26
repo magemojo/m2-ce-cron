@@ -3,7 +3,8 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="cron_schedule" resource="default" engine="innodb" comment="Cron Schedule">
         <column xsi:type="varchar" name="execution_host" nullable="true" length="255" comment="Execution Host"/>
-        <index referenceId="CRON_SCHEDULE_EXECUTION_HOST" indexType="btree">
+        <index referenceId="CRON_SCHEDULE_STATUS_EXECUTION_HOST" indexType="btree">
+            <column name="status"/>
             <column name="execution_host"/>
         </index>
         <index referenceId="CRON_SCHEDULE_SCHEDULED_AT_HOST_STATUS" indexType="btree">
