@@ -132,7 +132,8 @@ class Schedule extends AbstractModel
         ini_set('max_execution_time', 0);
         #Handle SIGTERM event with graceful shutdown
         pcntl_async_signals(true);
-        pcntl_signal(SIGTERM, 'handleExit');
+        pcntl_signal(SIGTERM, [$this, 'handleExit']);
+        pcntl_signal(SIGINT, [$this, 'handleExit']);
         #Set transaction name for New Relic, if installed
         if (extension_loaded ('newrelic')) {
             newrelic_name_transaction ('magemojo_cron');
@@ -1028,7 +1029,7 @@ class Schedule extends AbstractModel
      *
      * @return void
      */
-    private function handleExit()
+    public function handleExit()
     {
         while(($runningPids = $this->checkRunningJobs()) > 0){
             $this->printInfo("Cron Shutdown Requested. Waiting for $runningPids jobs to complete.");
@@ -1039,6 +1040,7 @@ class Schedule extends AbstractModel
             # check jobs/clean up
             $this->asylum();
         }
+        $this->printInfo("Cron Shutdown successful.");
 
         exit;
     }
