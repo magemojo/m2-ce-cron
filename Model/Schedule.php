@@ -130,6 +130,9 @@ class Schedule extends AbstractModel
     public function initialize() {
         #Keep the service alive indefinitely
         ini_set('max_execution_time', 0);
+        #Handle SIGTERM event with graceful shutdown
+        pcntl_async_signals(true);
+        pcntl_signal(SIGTERM, 'handleExit');
         #Set transaction name for New Relic, if installed
         if (extension_loaded ('newrelic')) {
             newrelic_name_transaction ('magemojo_cron');
@@ -412,7 +415,7 @@ class Schedule extends AbstractModel
         $this->initialize();
         if ($noPid || !($currentHost && $processRunning)) {
             if ($this->cronenabled == 0) {
-                $this->exit();
+                $this->handleExit();
             } else {
                 $this->service();
             }
@@ -560,7 +563,7 @@ class Schedule extends AbstractModel
             $this->getRuntimeParameters();
             if ($this->cronenabled == 0) {
                 $this->printWarn("Stopped Cron Service. Cron disabled.");
-                $this->exit();
+                $this->handleExit();
             }
 
             #Checking if new jobs need to be scheduled
@@ -817,7 +820,7 @@ class Schedule extends AbstractModel
         $execpid = $this->checkPid(self::CRON_SERVICE_PIDFILE);
         if ($pid != $execpid){
             // wait for currently running jobs to finish and then exit
-            $this->exit();
+            $this->handleExit();
         }
     }
 
@@ -1025,7 +1028,7 @@ class Schedule extends AbstractModel
      *
      * @return void
      */
-    private function exit()
+    private function handleExit()
     {
         while(($runningPids = $this->checkRunningJobs()) > 0){
             $this->printInfo("Cron Shutdown Requested. Waiting for $runningPids jobs to complete.");
