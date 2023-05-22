@@ -1,1 +1,41 @@
-require "<<basedir>>/app/bootstrap.php"; if (extension_loaded ("newrelic")) { newrelic_name_transaction ("<<name>>");} try{ $bootstrap = \Magento\Framework\App\Bootstrap::create(BP, $_SERVER); $obj = $bootstrap->getObjectManager(); $scheduleid = <<scheduleid>>; $state = $obj->get("Magento\Framework\App\State"); $state->setAreaCode("crontab"); $areaList = $obj->get("Magento\Framework\App\AreaList"); $areaList->getArea("crontab")->load("translate"); $instance = $obj->get("<<instance>>"); $schedule = $obj->get("\Magento\Cron\Model\Schedule")->load($scheduleid); $instance-><<method>>($schedule);} catch (Throwable $t) { echo "Cron Execution Error",$t->getMessage(),"\n"; if (extension_loaded ("newrelic")){newrelic_notice_error($t);}}
+require "<<basedir>>/app/bootstrap.php";
+$thisPid = getmypid();
+if (extension_loaded ("newrelic")) {
+    newrelic_name_transaction ("<<name>>");
+}
+$success = false;
+$errorMessage = null;
+$resource = null;
+try {
+    $bootstrap = \Magento\Framework\App\Bootstrap::create(BP, $_SERVER);
+    $obj = $bootstrap->getObjectManager();
+    $logger = $obj->get("Psr\Log\LoggerInterface");
+    $resource = $obj->get("\MageMojo\Cron\Model\ResourceModel\Schedule");
+
+    /* Update job record to indicate the job is running */
+    $resource->setJobStatus(<<scheduleid>>, 'running', null, gethostname());
+
+    $logger->debug("Cron Job <<name>> schedule <<scheduleid>> running with pid $thisPid.");
+    $scheduleid = <<scheduleid>>;
+    $state = $obj->get("Magento\Framework\App\State");
+    $state->setAreaCode("crontab");
+    $areaList = $obj->get("Magento\Framework\App\AreaList");
+    $areaList->getArea("crontab")->load("translate");
+    $instance = $obj->get("<<instance>>");
+    $schedule = $obj->get("\Magento\Cron\Model\Schedule")->load($scheduleid);
+    $instance-><<method>>($schedule);
+    $logger->debug("Cron Job <<name>> schedule <<scheduleid>> finished successfully.");
+    $success = true;
+} catch (Throwable $t) {
+    $success = false;
+    $errorMessage = "Error running Cron Job <<name>> schedule <<scheduleid>>: " . $t->getMessage();
+    print $errorMessage;
+    $logger->error($errorMessage,['exception'=>$t]);
+    if (extension_loaded ("newrelic")){
+        newrelic_notice_error($t);
+    }
+} finally {
+    if ($resource){
+        $resource->setJobStatus(<<scheduleid>>, $success ? 'success' : 'error', $errorMessage);
+    }
+}

@@ -106,7 +106,7 @@ class Schedule extends AbstractDb
       $connection = $this->getConnection();
       $updatedata = array('status' => $status);
       $updatedata["messages"] = $output;
-      if ($status == 'success') {
+      if ($status == 'success' || $status == 'error') {
         $updatedata["finished_at"] = date('Y-m-d H:i:s',time());
       }
       if ($status == 'running') {
@@ -198,7 +198,7 @@ class Schedule extends AbstractDb
             ->from($this->getTable('cron_schedule'))
             ->where('status = ?',$status);
       if (!empty($host)){
-          $select = $select->where('execution_host',$host);
+          $select = $select->where('execution_host = ?',$host);
       }
       $result = $connection->fetchAll($select);
       return $result;
