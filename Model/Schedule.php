@@ -850,7 +850,7 @@ class Schedule extends AbstractModel
     public function cleanup() {
         $this->basedir = $this->directoryList->getRoot();
         $this->checkCronFolderExistence();
-        $this->initialize();
+        $this->getRuntimeParameters();
         /* gets a list of all schedule ids in the cron table */
         $scheduleids = $this->resource->cleanSchedule($this->history);
         /* gets a list of all cron schedule output files */
