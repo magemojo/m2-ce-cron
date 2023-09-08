@@ -960,7 +960,7 @@ class Schedule extends AbstractModel
 
             if (!$this->checkProcess($pid)) {
                 #IF this is a consumers job it was run under strace and we do not want this output
-                if (isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
+                if ($this->governor && isset($jobconfig["consumers"]) && $jobconfig["consumers"]) {
                     $output = '';
                 } else {
                     $output = $this->getJobOutput($scheduleid);
