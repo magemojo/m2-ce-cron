@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="MageMojo_Cron::heading" title="MageMojo Cron" translate="title" sortOrder="79">
+                    <resource id="MageMojo_Cron::settings" title="Cron Configuration" translate="title" sortOrder="1"/>
+                    <resource id="MageMojo_Cron::reports" title="Cron Execution Report" translate="title" sortOrder="1"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
