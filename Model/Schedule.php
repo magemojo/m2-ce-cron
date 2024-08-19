@@ -351,7 +351,9 @@ class Schedule extends AbstractModel
         $allowedConsumers = $this->deploymentConfig->get('cron_consumers_runner/consumers', []);
         $runConsumersInCron = $this->deploymentConfig->get('cron_consumers_runner/cron_run', true);
         foreach($this->config as $job) {
-            if (isset($job["schedule"])) {
+            if(isset($job["schedule"]) && empty($job['schedule'])) {
+                $this->printWarn('The schedule element in a job array is EMPTY (disabled cronjob) : '.var_export($job, true));
+            } elseif (isset($job["schedule"]) && !empty($job['schedule'])) {
                 $schedule = array();
                 $expr = explode(' ',(string)$job["schedule"]);
                 $buildtime = (floor($from/60)*60);
