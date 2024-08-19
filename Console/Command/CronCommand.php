@@ -72,6 +72,12 @@ class CronCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-    	$this->schedule->execute();
+        try {
+            $this->schedule->execute();
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $output->writeln('Error: '.$e->getMessage());
+            return Command::FAILURE;
+        }
     }
 }
