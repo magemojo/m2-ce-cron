@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="magemojo" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="0" showInStore="0">
+            <tab>advanced</tab>
+            <label>Cron</label>
+            <resource>MageMojo_Cron::settings</resource>
+            <group id="cron" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Cron Settings</label>
+                <field id="enabled" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Cron Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="cluster_support" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable cluster support</label>
+                    <comment><![CDATA[REQUIRED for Magento Commerce Cloud or any scaled/clustered environment.
+                    If more than one app server could potentially run the cron service, enable this.]]>
+                    </comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="jobs" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Maximum Cron Processes</label>
+                    <comment><![CDATA[The number of cron threads running in parallel.
+                    This option is the sum of all defined jobs. <br/>
+                    Example: If you have 5 jobs set to run at midnight, Maximum Cron Processes set to 1,
+                    only 1 job will execute sequentially until all 5 are completed. Default 3.]]></comment>
+                    <validate>integer validate-greater-than-zero</validate>
+                </field>
+                <field id="phpproc" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>PHP Binary Name / Path</label>
+                    <comment><![CDATA[The name of your php binary you run from the shell.
+                    Usually php or php70. You can optionally include the full path to the binary. Default php.
+                    ]]></comment>
+                </field>
+                <field id="maxload" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Max Load Average</label>
+                    <comment><![CDATA[Defined by the php function sys.getloadavg() / number of cpu cores. The function sys.getloadavg() is reported 1.0 for each core in use, just like the load average reported in top. The number of cpu cores is pulled from /proc/cpuinfo and load average is divided by this number. If load average exceeds this amount cron processes will be temporarily suspended until load decreases.]]></comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                </field>
+                <field id="history" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>History Retention</label>
+                    <comment><![CDATA[The number of days history to keep in the cron_schedule table. Default 1 (1 day).]]></comment>
+                    <validate>integer validate-greater-than-zero</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
